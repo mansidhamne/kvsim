@@ -1,0 +1,113 @@
+{
+ "system": {
+  "platform": "macOS-26.3.1-arm64-arm-64bit",
+  "machine": "arm64",
+  "ollama_server_version": "0.40.6",
+  "text_model": "qwen2.5:0.5b",
+  "num_parallel": 1,
+  "num_ctx": 8192,
+  "cache_ram_mib": null
+ },
+ "cost_model": {
+  "prefill_tokens_per_s": 876.8,
+  "fixed_overhead_s": 0.0383,
+  "attn_s_per_token_pair": 0.0,
+  "image_cost_multiplier": 1.478
+ },
+ "fit": {
+  "cold_only": {
+   "overhead_s": 0.0066877708446409214,
+   "tokens_per_s": 865.1148957843669,
+   "r2": 0.9798067863295279,
+   "r2_with_quadratic": 0.9799340619978056
+  },
+  "joint": {
+   "overhead_s": 0.0344504435270268,
+   "tokens_per_s": 875.861451114073,
+   "attn_c": 3.993935992204453e-08,
+   "attn_c_se": 7.37231842545433e-08,
+   "r2": 0.984907348204336
+  }
+ },
+ "identical_resend_median_s": 0.027774874994065613,
+ "cache": {
+  "budget_mib": 48,
+  "largest_m_hitting": 14,
+  "mean_prompt_tokens": 269.19958333333335,
+  "capacity_tokens": 3768,
+  "kib_per_token": 12.064605102471988,
+  "probe": [
+   {
+    "m": 2,
+    "mean_prompt_tokens": 277.5,
+    "hit_fraction": 0.972972972972973
+   },
+   {
+    "m": 4,
+    "mean_prompt_tokens": 264.25,
+    "hit_fraction": 0.9730769230769231
+   },
+   {
+    "m": 6,
+    "mean_prompt_tokens": 268.3333333333333,
+    "hit_fraction": 0.9706959706959707
+   },
+   {
+    "m": 8,
+    "mean_prompt_tokens": 270.875,
+    "hit_fraction": 0.9657534246575342
+   },
+   {
+    "m": 10,
+    "mean_prompt_tokens": 268.7,
+    "hit_fraction": 0.9589552238805971
+   },
+   {
+    "m": 12,
+    "mean_prompt_tokens": 267.8333333333333,
+    "hit_fraction": 0.960431654676259
+   },
+   {
+    "m": 14,
+    "mean_prompt_tokens": 263.0,
+    "hit_fraction": 0.960431654676259
+   },
+   {
+    "m": 16,
+    "mean_prompt_tokens": 269.4375,
+    "hit_fraction": 0.0
+   },
+   {
+    "m": 20,
+    "mean_prompt_tokens": 270.4,
+    "hit_fraction": 0.0
+   },
+   {
+    "m": 24,
+    "mean_prompt_tokens": 271.6666666666667,
+    "hit_fraction": 0.0
+   }
+  ]
+ },
+ "vision": {
+  "model": "moondream",
+  "text_tokens_per_s": 231.9765597632468,
+  "text_overhead_s": -0.04785766809588934,
+  "image_tokens": 730.0,
+  "image_prompt_wall_s": 4.654705604494666,
+  "image_cost_multiplier": 1.4779239041706196,
+  "same_length_text_wall_s": 3.150741366036174,
+  "reuse": {
+   "first_wall_s": 4.098346209008014,
+   "first_cached": 3,
+   "second_wall_s": 0.12264787498861551,
+   "second_cached": 732,
+   "second_total": 741
+  },
+  "multi_image": {
+   "wall_s": 8.267378542019287,
+   "n_total": 1471
+  },
+  "note": "multiplier measured on a different (vision) model than the text fit"
+ }
+}
