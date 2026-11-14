@@ -66,8 +66,10 @@ knows the token IDs and image identifiers.
   kwargs, vLLM uses that UUID **verbatim** as the identifier. With processor kwargs, it hashes
   the UUID together with them.
 - **Router decision:** the load generator sends a stable UUID per image (e.g. `coco-000000139`).
-  The router then knows each image's identifier without hashing pixels. How the UUID is passed
-  in an OpenAI chat request (a `uuid` field on the image content part) is **[verify]**.
+  The router then knows each image's identifier without hashing pixels. The UUID goes in a
+  top-level `uuid` field on the image content part:
+  `{"type": "image_url", "image_url": {"url": ...}, "uuid": "img-00012-448x448"}`
+  **[source: `renderers/chat_utils.py` reads `part.get("uuid")`]**
 - The router still needs each image's **token count and position** to place it in blocks; that
   comes from the model's processor (same image size -> same count). **[verify per model]**
 
@@ -120,6 +122,17 @@ Details that matter for the index:
 - Because `BlockStored` carries `token_ids`, `parent_block_hash` and `extra_keys`, the router can
   check its own hash function against real events in a test: recompute and compare.
 
+## Per-request usage **[source: `entrypoints/openai/chat_completion/serving.py`]**
+
+With `--enable-prompt-tokens-details` (off by default), the final usage chunk includes
+`prompt_tokens_details`: `cached_tokens` (prefix-cache hit for this request),
+`created_cache_tokens`, and `multimodal_tokens` (e.g. `{"image": 512}`). Without the flag the
+field is absent. Streaming needs `"stream_options": {"include_usage": true}`.
+
+Other request fields used: `min_tokens` and `ignore_eos` are accepted on chat completions
+**[source: `chat_completion/protocol.py`]**; request logging is off by default
+(`--enable-log-requests` turns it on).
+
 ## Metrics (`GET /metrics`, Prometheus text) **[docs]**
 
 | use | metric |
@@ -136,7 +149,7 @@ between experiment cells (or record the values at the start of each cell).
 ## Open questions for the first GPU run (Phase 2)
 
 1. Which attention backend does a T4 pick, and is fp16 output from the chosen VLM sane?
-2. Exact OpenAI request field for a per-image UUID.
+2. ~~Exact OpenAI request field for a per-image UUID.~~ Answered from source: `uuid` on the content part. Confirm vLLM accepts it (smoke check).
 3. Image token count per image size for the chosen model.
 4. Does `vllm:num_requests_waiting` exist under that name?
 5. Kaggle's Python and CUDA versions vs the wheel's requirements.

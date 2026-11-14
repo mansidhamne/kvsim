@@ -50,6 +50,7 @@ class Record:
     output_chunks: int = 0
     prompt_tokens: int | None = None
     cached_tokens: int | None = None
+    mm_tokens: dict | None = None     # prompt_tokens_details.multimodal_tokens, e.g. {"image": 512}
     status: int | None = None
     error: str | None = None
 
@@ -104,7 +105,9 @@ async def _send(session: aiohttp.ClientSession, url: str, body: dict, headers: d
                 if obj.get("usage"):
                     u = obj["usage"]
                     rec.prompt_tokens = u.get("prompt_tokens")
-                    rec.cached_tokens = (u.get("prompt_tokens_details") or {}).get("cached_tokens")
+                    det = u.get("prompt_tokens_details") or {}
+                    rec.cached_tokens = det.get("cached_tokens")
+                    rec.mm_tokens = det.get("multimodal_tokens")
                 for ch in obj.get("choices") or []:
                     if (ch.get("delta") or {}).get("content"):
                         now = time.perf_counter()

@@ -103,6 +103,7 @@ def block_hashes(tokens: list, block_size: int) -> list[int]:
 class _Job:
     n_tokens: int
     blocks: list[int]
+    image_tokens: int = 0
     done: asyncio.Event = field(default_factory=asyncio.Event)
     hit_tokens: int = 0
     queued_at: float = 0.0
@@ -119,6 +120,9 @@ class MockEngine:
         self.prefix_queries = 0
         self.prefix_hits = 0
         self.requests_done = 0
+        self.ttft_sum = 0.0          # sums only (no buckets): enough for mean values
+        self.itl_sum = 0.0
+        self.itl_count = 0
         self._img_tokens: dict = {}
         self._task: asyncio.Task | None = None
 
@@ -152,9 +156,11 @@ class MockEngine:
 
     async def prefill(self, messages: list[dict]) -> _Job:
         toks = tokenize(messages, self.cfg, self._img_tokens)
-        job = _Job(len(toks), block_hashes(toks, self.cfg.block_size), queued_at=time.perf_counter())
+        job = _Job(len(toks), block_hashes(toks, self.cfg.block_size),
+                   image_tokens=sum(1 for t in toks if t[0] == "img"), queued_at=time.perf_counter())
         await self.queue.put(job)
         await job.done.wait()
+        self.ttft_sum += time.perf_counter() - job.queued_at
         return job
 
     def metrics_text(self) -> str:
@@ -166,6 +172,12 @@ class MockEngine:
             "# TYPE vllm:num_requests_running gauge", f"vllm:num_requests_running{lab} {self.prefilling + self.decoding}",
             "# TYPE vllm:num_requests_waiting gauge", f"vllm:num_requests_waiting{lab} {self.queue.qsize()}",
             "# TYPE vllm:kv_cache_usage_perc gauge", f"vllm:kv_cache_usage_perc{lab} {len(self.cache) / c.cache_blocks:.4f}",
+            "# TYPE vllm:time_to_first_token_seconds histogram",
+            f"vllm:time_to_first_token_seconds_sum{lab} {self.ttft_sum:.6f}",
+            f"vllm:time_to_first_token_seconds_count{lab} {self.requests_done}",
+            "# TYPE vllm:inter_token_latency_seconds histogram",
+            f"vllm:inter_token_latency_seconds_sum{lab} {self.itl_sum:.6f}",
+            f"vllm:inter_token_latency_seconds_count{lab} {self.itl_count}",
             "# TYPE kvroute:mock_requests_done counter", f"kvroute:mock_requests_done{lab} {self.requests_done}",
         ]
         return "\n".join(lines) + "\n"
@@ -208,9 +220,12 @@ def make_app(cfg: MockConfig) -> web.Application:
         job = await engine.prefill(body.get("messages", []))
         usage = {"prompt_tokens": job.n_tokens, "completion_tokens": n_out,
                  "total_tokens": job.n_tokens + n_out,
-                 "prompt_tokens_details": {"cached_tokens": job.hit_tokens}}
+                 "prompt_tokens_details": {"cached_tokens": job.hit_tokens,
+                                           "multimodal_tokens": {"image": job.image_tokens} if job.image_tokens else None}}
         headers = {"x-kvroute-worker": cfg.worker_id}
         gap = 1.0 / cfg.decode_tps / cfg.time_scale
+        engine.itl_sum += gap * max(0, n_out - 1)
+        engine.itl_count += max(0, n_out - 1)
         engine.decoding += 1
         try:
             if not body.get("stream"):

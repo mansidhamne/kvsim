@@ -15,7 +15,7 @@ dev = ["pytest>=7"]
 router = ["aiohttp>=3.9", "pyzmq>=25", "msgspec>=0.18", "pillow>=10"]
 
 [tool.setuptools.packages.find]
-include = ["kvsim*", "router*", "bench*"]
+include = ["kvsim*", "router*", "bench*", "deploy*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
