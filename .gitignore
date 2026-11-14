@@ -9,3 +9,6 @@ notes/
 calibration/results/*.log
 
 .DS_Store
+
+# mock-worker runs from bench/ (regenerated in seconds)
+results/**/mock_*.jsonl
