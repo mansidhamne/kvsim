@@ -12,3 +12,4 @@ calibration/results/*.log
 
 # mock-worker runs from bench/ (regenerated in seconds)
 results/**/mock_*.jsonl
+results/phase2_mock/
