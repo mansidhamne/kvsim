@@ -68,7 +68,11 @@ class _Prompts:
     def __init__(self, seed: int = 0, pool: ImagePool | None = None):
         self.rng = random.Random(seed)
         self.pool = pool or ImagePool()
-        self._next_image = 10_000            # pool indices for "never seen" images
+        # Pool indices for "never seen" images, in a range unique to this prompt generator: the
+        # smoke check and the calibration must never send the same image uuid, or vLLM's
+        # encoder cache reuses the image features and the "cold" timing is wrong (this
+        # happened in the 2026-11-14 run: 73 ms instead of ~190 ms).
+        self._next_image = 100_000 * (seed + 1)
 
     def words(self, n: int) -> str:
         return " ".join(self.rng.choice(_WORDS) for _ in range(n))
@@ -121,10 +125,13 @@ async def _metrics(session, url: str) -> str:
 
 
 def parse_metric(text: str, name: str) -> float | None:
-    """Sum of all samples of a counter/gauge (all label sets)."""
+    """Sum of all samples of a counter/gauge (all label sets). Prometheus clients export a
+    counter `x` as `x_total`, so both spellings are accepted."""
     total, found = 0.0, False
     for line in text.splitlines():
-        if line.startswith(name + "{") or line.startswith(name + " "):
+        if line.startswith("#"):
+            continue
+        if any(line.startswith(n + "{") or line.startswith(n + " ") for n in (name, name + "_total")):
             try:
                 total += float(line.rsplit(" ", 1)[1])
                 found = True
@@ -158,7 +165,7 @@ async def smoke(url: str, cfg: CalibConfig = CalibConfig(), pool: ImagePool | No
             ref = P.fresh_images(1, size)
             sysm = "Smoke " + P.nonce()
             first = await _one(s, url, cfg, P.messages(sysm, "Describe the image.", ref), 8,
-                               kind="image", size=list(size))
+                               kind="image", size=list(size), image_uuids=[r.uuid for r in ref])
             second = await _one(s, url, cfg, P.messages(sysm, "What colors are in it?", ref), 8,
                                 kind="image_again", size=list(size))
             sizes[f"{size[0]}x{size[1]}"] = {"first": first, "second": second,
@@ -200,7 +207,7 @@ async def exp_image_cold(s, url, cfg, P) -> list[dict]:
                 refs = P.fresh_images(k, size)
                 msgs = P.messages(P.nonce(), "Describe these images briefly.", refs)
                 rows.append(await _one(s, url, cfg, msgs, exp="image_cold", size=list(size),
-                                       images=k, rep=rep))
+                                       images=k, rep=rep, image_uuids=[r.uuid for r in refs]))
     return rows
 
 
@@ -291,11 +298,12 @@ async def calibrate(url: str, cfg: CalibConfig = CalibConfig(), pool: ImagePool 
 
 # ------------------------------------------------------------------------------- fit
 
-def _fit_rows(raw: dict) -> list[tuple[int, int, int, float]]:
-    """(new tokens, cached tokens, new image tokens, ttft) for every request with a TTFT."""
+def _fit_rows(raw: dict, exclude=None) -> list[tuple[int, int, int, float]]:
+    """(new tokens, cached tokens, new image tokens, ttft) for every request with a TTFT.
+    `exclude(row) -> bool` drops rows known to be invalid (documented where it is used)."""
     out = []
     for r in raw.get("text_cold", []) + raw.get("image_cold", []) + raw.get("hits", []):
-        if r.get("ttft_s") is None or not r.get("prompt_tokens"):
+        if r.get("ttft_s") is None or not r.get("prompt_tokens") or (exclude and exclude(r)):
             continue
         cached = r.get("cached_tokens") or 0
         img = (r.get("mm_tokens") or {}).get("image", 0) or 0
@@ -304,7 +312,7 @@ def _fit_rows(raw: dict) -> list[tuple[int, int, int, float]]:
     return out
 
 
-def fit(raw: dict, block_size: int = 16) -> dict:
+def fit(raw: dict, block_size: int = 16, exclude=None) -> dict:
     """Least squares over cold AND cached requests:
 
         ttft = overhead + new / rate + e * new_image_tokens + attn * new * (cached + new / 2)
@@ -314,7 +322,7 @@ def fit(raw: dict, block_size: int = 16) -> dict:
     1 + e * rate. Returns a `cost_model` section loadable by kvsim.CostModel.from_calibration,
     the linear-only fit for comparison, and the measured curves Phase 5 needs.
     """
-    rows = _fit_rows(raw)
+    rows = _fit_rows(raw, exclude)
     X = np.array([[1.0, n, img, n * (c + n / 2)] for n, c, img, _ in rows])
     y = np.array([t for *_, t in rows])
 

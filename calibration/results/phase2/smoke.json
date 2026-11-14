@@ -9,16 +9,20 @@
   },
   "text": {
     "kind": "text",
-    "ttft_s": 0.9585883529998682,
-    "e2e_s": 1.0899363119999634,
+    "ttft_s": 0.057462774999748945,
+    "e2e_s": 0.18808496800011199,
     "prompt_tokens": 46,
+    "completion_tokens": 8,
     "cached_tokens": 0,
     "mm_tokens": null,
     "output_chunks": 8,
     "status": 200,
     "error": null,
-    "itl_p50_s": 0.01887
+    "max_tokens": 8,
+    "output_text": "Hello! How can I assist you today",
+    "itl_p50_s": 0.01864
   },
+  "sanity_reply": "Paris. \n\nThe capital of France is",
   "images": {
     "448x448": {
       "first": {
@@ -27,9 +31,10 @@
           448,
           448
         ],
-        "ttft_s": 0.39276448900000105,
-        "e2e_s": 0.5010781230000703,
+        "ttft_s": 0.22186547600040285,
+        "e2e_s": 0.32810420300029364,
         "prompt_tokens": 305,
+        "completion_tokens": 8,
         "cached_tokens": 0,
         "mm_tokens": {
           "image": 256
@@ -37,7 +42,9 @@
         "output_chunks": 8,
         "status": 200,
         "error": null,
-        "itl_p50_s": 0.01558
+        "max_tokens": 8,
+        "output_text": "The image depicts a well-lit,",
+        "itl_p50_s": 0.01522
       },
       "second": {
         "kind": "image_again",
@@ -45,9 +52,10 @@
           448,
           448
         ],
-        "ttft_s": 0.03752706099999159,
-        "e2e_s": 0.14490014600005452,
+        "ttft_s": 0.0359004060001098,
+        "e2e_s": 0.14107723799997984,
         "prompt_tokens": 307,
+        "completion_tokens": 8,
         "cached_tokens": 288,
         "mm_tokens": {
           "image": 256
@@ -55,7 +63,9 @@
         "output_chunks": 8,
         "status": 200,
         "error": null,
-        "itl_p50_s": 0.01549
+        "max_tokens": 8,
+        "output_text": "The room has a yellow wall, a",
+        "itl_p50_s": 0.01516
       },
       "image_tokens": 256
     },
@@ -66,9 +76,10 @@
           672,
           448
         ],
-        "ttft_s": 0.2858629239999573,
-        "e2e_s": 0.39435866499979966,
+        "ttft_s": 0.27874155700010306,
+        "e2e_s": 0.3860306900000978,
         "prompt_tokens": 435,
+        "completion_tokens": 8,
         "cached_tokens": 0,
         "mm_tokens": {
           "image": 384
@@ -76,7 +87,9 @@
         "output_chunks": 8,
         "status": 200,
         "error": null,
-        "itl_p50_s": 0.01554
+        "max_tokens": 8,
+        "output_text": "The image depicts a close-up of a",
+        "itl_p50_s": 0.01538
       },
       "second": {
         "kind": "image_again",
@@ -84,9 +97,10 @@
           672,
           448
         ],
-        "ttft_s": 0.04272762400000829,
-        "e2e_s": 0.15064835899988793,
+        "ttft_s": 0.04110523200006355,
+        "e2e_s": 0.14738754000018162,
         "prompt_tokens": 437,
+        "completion_tokens": 8,
         "cached_tokens": 416,
         "mm_tokens": {
           "image": 384
@@ -94,7 +108,9 @@
         "output_chunks": 8,
         "status": 200,
         "error": null,
-        "itl_p50_s": 0.01563
+        "max_tokens": 8,
+        "output_text": "The bear in the picture has a light",
+        "itl_p50_s": 0.01536
       },
       "image_tokens": 384
     }

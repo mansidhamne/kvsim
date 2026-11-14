@@ -134,3 +134,25 @@ def test_validation_fails_on_bad_data():
     assert "model answers 'capital of France' correctly" in failed
     assert "every request has a TTFT" in failed
     assert "cold requests really were cold (0 cached)" in failed
+
+
+def test_parse_metric_accepts_prometheus_total_suffix():
+    text = '# TYPE vllm:prefix_cache_hits counter\nvllm:prefix_cache_hits_total{model_name="m"} 42.0\n'
+    assert parse_metric(text, "vllm:prefix_cache_hits") == 42.0
+
+
+def test_smoke_and_calibration_never_share_an_image():
+    from deploy.calibrate import _Prompts
+    smoke_p, calib_p = _Prompts(seed=1), _Prompts(seed=2)
+    a = {r.uuid for r in smoke_p.fresh_images(50, (448, 448))}
+    b = {r.uuid for r in calib_p.fresh_images(50, (448, 448))}
+    assert not a & b
+
+
+def test_validation_flags_reused_cold_image():
+    from deploy.validate import check_image_cold
+    row = {"size": [448, 448], "images": 1, "rep": 0, "prompt_tokens": 300, "cached_tokens": 0,
+           "mm_tokens": {"image": 256}, "ttft_s": 0.07, "completion_tokens": 1, "max_tokens": 1,
+           "status": 200, "error": None, "image_uuids": ["img-10000-448x448"]}
+    checks = check_image_cold([row], {"448x448": 256}, earlier_uuids={"img-10000-448x448"})
+    assert any(c.status == "FAIL" and "new" in c.name for c in checks)

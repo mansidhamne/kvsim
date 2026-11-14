@@ -115,9 +115,21 @@ def check_text_cold(rows: list[dict]) -> list[Check]:
     return c
 
 
-def check_image_cold(rows: list[dict], tokens_per_image: dict[str, int] | None) -> list[Check]:
+def check_image_cold(rows: list[dict], tokens_per_image: dict[str, int] | None,
+                     earlier_uuids: set[str] | None = None) -> list[Check]:
     c: list[Check] = []
     _rows_ok("image_cold", rows, c)
+    seen = set(earlier_uuids or ())
+    reused = []
+    for r in rows:
+        for u in r.get("image_uuids") or []:
+            if u in seen:
+                reused.append(u)
+            seen.add(u)
+    if any("image_uuids" in r for r in rows):
+        c.append(Check("image_cold", "every cold image is new (no uuid sent earlier in the run)",
+                       FAIL if reused else PASS,
+                       f"reused: {reused[:3]} (the encoder cache makes these look cheaper)" if reused else ""))
     hit = [r for r in rows if (r.get("cached_tokens") or 0) > 0]
     c.append(Check("image_cold", "cold requests really were cold (0 cached)", FAIL if hit else PASS,
                    f"{len(hit)} rows had cache hits" if hit else ""))
@@ -257,7 +269,9 @@ def validate_run(smoke: dict | None, raw: dict | None, fitted: dict | None,
         if "text_cold" in raw:
             checks += check_text_cold(raw["text_cold"])
         if "image_cold" in raw:
-            checks += check_image_cold(raw["image_cold"], tokens_per_image)
+            smoke_uuids = {u for v in ((smoke or {}).get("images") or {}).values()
+                           for u in ((v.get("first") or {}).get("image_uuids") or [])}
+            checks += check_image_cold(raw["image_cold"], tokens_per_image, smoke_uuids)
         if "hits" in raw:
             checks += check_hits(raw["hits"])
         if "load" in raw:
