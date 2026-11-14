@@ -295,3 +295,54 @@ def print_report(report: dict, show_pass: bool = False) -> None:
         if ch["status"] != PASS or show_pass:
             print(f"  {ch['status']}  [{ch['step']}] {ch['name']}" + (f": {ch['detail']}" if ch["detail"] else ""))
     print("  RESULT:", "VALID" if report["ok"] else "NOT VALID: do not use these numbers")
+
+
+# ------------------------------------------------------------------------------- phase 3
+
+def validate_phase3(cells: list[dict], block_size: int = 16) -> dict:
+    """Checks for a routing experiment: every policy saw the same trace on freshly reset
+    workers, and every measured request is complete and sane."""
+    checks: list[Check] = []
+    by_load = defaultdict(list)
+    for c in cells:
+        by_load[c["active_convs"]].append(c)
+    for n, group in by_load.items():
+        fps = {c["trace_fingerprint"] for c in group}
+        checks.append(Check("phase3", f"{n} convs: every policy replayed the same trace",
+                            PASS if len(fps) == 1 else FAIL, f"fingerprints {sorted(fps)}"))
+    for c in cells:
+        tag = f"{c['active_convs']} convs / {c['policy']}"
+        s = c["summary"]
+        checks.append(Check("phase3", f"{tag}: worker caches reset before the run",
+                            PASS if all(c.get("reset_ok") or [False]) else FAIL, str(c.get("reset_ok"))))
+        checks.append(Check("phase3", f"{tag}: no failed requests", FAIL if s["errors"] else PASS,
+                            f"{s['errors']} of {s['requests']}" if s["errors"] else f"{s['requests']} measured"))
+        if s.get("missing_ttft"):
+            checks.append(Check("phase3", f"{tag}: every request has a TTFT", FAIL, f"{s['missing_ttft']} missing"))
+        if s.get("wrong_output_len"):
+            checks.append(Check("phase3", f"{tag}: output length as requested", FAIL,
+                                f"{s['wrong_output_len']} requests differ"))
+        if s.get("hit_rate") is None:
+            checks.append(Check("phase3", f"{tag}: server reported cached tokens", FAIL, "no usage details"))
+        for text in s.get("sample_outputs") or []:
+            good, why = looks_like_text(text)
+            if not good:
+                checks.append(Check("phase3", f"{tag}: outputs are readable text", FAIL, f"{why}: {text[:50]!r}"))
+                break
+        srv, cli = (c.get("server") or {}).get("prefix_hits"), (c.get("client_all") or {}).get("cached_tokens")
+        if srv is None:
+            checks.append(Check("phase3", f"{tag}: server cache counter readable", WARN, "missing"))
+        else:
+            tol = max(0.05 * max(srv, cli), block_size * c["client_all"]["requests"])
+            checks.append(Check("phase3", f"{tag}: server cache hits match client",
+                                PASS if abs(srv - cli) <= tol else WARN, f"server {srv:.0f} vs client {cli:.0f}"))
+        if (s.get("late_frac") or 0) > 0.2:
+            checks.append(Check("phase3", f"{tag}: follow-ups sent on schedule", WARN,
+                                f"{s['late_frac']:.0%} of turns > 1 s late (system overloaded for this trace)"))
+        if s.get("prediction_exact_frac") is not None and c["policy"] == "cache_aware":
+            checks.append(Check("phase3", f"{tag}: router's predicted reuse matches the engine",
+                                PASS if s["prediction_exact_frac"] >= 0.7 else WARN,
+                                f"{s['prediction_exact_frac']:.0%} within one block; "
+                                f"mean error {s['prediction_mae_tokens']:.0f} tokens"))
+    counts = {k: sum(ch.status == k for ch in checks) for k in (PASS, WARN, FAIL)}
+    return {"ok": counts[FAIL] == 0, "counts": counts, "checks": [asdict(ch) for ch in checks]}

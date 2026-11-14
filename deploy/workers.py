@@ -101,7 +101,7 @@ class VllmWorkers:
         self.log_dir = Path(self.log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
         for s in self.specs:
-            env = {**os.environ, "CUDA_VISIBLE_DEVICES": str(s.gpu),
+            env = {**os.environ, "CUDA_VISIBLE_DEVICES": str(s.gpu), "VLLM_SERVER_DEV_MODE": "1",
                    "PYTHONHASHSEED": self.cfg.hash_seed}
             log = self.log_dir / f"vllm_{s.port}.log"
             fh = log.open("w")

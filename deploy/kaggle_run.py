@@ -132,6 +132,63 @@ def phase2(a: argparse.Namespace) -> int:
     return 0 if report["ok"] else 2
 
 
+def phase3_cmd(a: argparse.Namespace) -> int:
+    from bench.workload import RequestOptions
+    from deploy.phase3 import Phase3Config, run_phase3
+    from deploy.validate import validate_phase3
+    from kvsim.config import CostModel
+
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    cost = CostModel.from_calibration(a.cost)
+    pool = ImagePool(a.images) if a.images else ImagePool()
+    cfg = Phase3Config(policies=tuple(a.policies.split(",")),
+                       active_convs=tuple(int(x) for x in a.convs.split(",")),
+                       duration_s=a.duration, warmup_s=a.warmup, seed=a.seed,
+                       time_scale=a.time_scale, slo_ttft_s=a.slo_ttft, slo_itl_s=a.slo_itl)
+    if a.quick:
+        cfg.trace_overrides = {"think_mean_s": 4.0, "pool_size": 16}
+    info = env_info()
+    info.update({"phase": 3, "config": cfg.__dict__, "cost_model": cost.__dict__,
+                 "images": a.images or "synthetic"})
+    n_gpus = max(1, a.gpus)
+    per_gpu = max(1, -(-a.workers // n_gpus))
+    serve = ServeConfig(model=a.model, gpu_memory_utilization=round(0.9 / per_gpu - 0.02, 2),
+                        max_model_len=a.max_model_len, attention_backend=a.attention_backend)
+    if not a.external:
+        info["serve_config"] = serve.__dict__
+        info["workers"] = [{"port": 8001 + i, "gpu": i % n_gpus} for i in range(a.workers)]
+    save(info, out / "env.json")
+    print(json.dumps({k: info[k] for k in ("nvidia_smi", "vllm", "config")}, indent=2, default=str))
+
+    if a.external:
+        ctx = nullcontext(None)
+    else:
+        specs = [WorkerSpec(port=8001 + i, gpu=i % n_gpus) for i in range(a.workers)]
+        ctx = VllmWorkers(specs, serve, out / "logs")
+    with ctx as ws:
+        urls = a.external.split(",") if a.external else ws.urls
+        print("workers:", urls)
+        # every worker must answer the sanity question before the experiment counts
+        for u in urls:
+            sm = asyncio.run(smoke(u, CalibConfig.quick() if a.quick else CalibConfig(), pool))
+            if "paris" not in (sm.get("sanity_reply") or "").lower() or not sm["ok"]:
+                save(sm, out / "smoke_failed.json")
+                print(f"worker {u} failed the smoke check: {sm.get('sanity_reply')!r}, {sm['checks']}")
+                return 1
+        print("all workers passed the smoke check")
+        opts = RequestOptions(model="mock" if a.external else "model")
+        title = (f"Routing policies, {len(urls)} mock workers" if a.external else
+                 f"Routing policies, {len(urls)} vLLM workers ({a.model.split('/')[-1]}, {n_gpus}x GPU)")
+        cells = asyncio.run(run_phase3(urls, cfg, out, cost, pool, opts, title=title))
+
+    report = validate_phase3(cells, cost.block_size)
+    save(report, out / "validation.json")
+    print_report(report)
+    print(f"\nResults in {out}")
+    return 0 if report["ok"] else 2
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -150,7 +207,28 @@ def main() -> None:
     p2.add_argument("--experiments", default="text_cold,image_cold,hits,load",
                     help="comma-separated subset to run (e.g. skip the 5-minute load sweep)")
     p2.add_argument("--force", action="store_true", help="calibrate even if the smoke check fails")
+    p3 = sub.add_parser("phase3", help="all routing policies on the same trace, through the router")
+    p3.add_argument("--out", required=True)
+    p3.add_argument("--external", help="comma-separated running workers (e.g. mocks) instead of launching vLLM")
+    p3.add_argument("--workers", type=int, default=2, help="vLLM workers to launch")
+    p3.add_argument("--gpus", type=int, default=2, help="GPUs to spread workers over (round-robin)")
+    p3.add_argument("--model", default=ServeConfig.model)
+    p3.add_argument("--max-model-len", type=int, default=ServeConfig.max_model_len)
+    p3.add_argument("--attention-backend", default=None)
+    p3.add_argument("--cost", default="calibration/results/phase2/calibration_vllm_final.json")
+    p3.add_argument("--images", help="folder of real photos (e.g. COCO val2017)")
+    p3.add_argument("--policies", default=",".join(__import__("router.policies", fromlist=["POLICIES"]).POLICIES))
+    p3.add_argument("--convs", default="12,24", help="comma-separated load levels (active conversations)")
+    p3.add_argument("--duration", type=float, default=300.0, help="measured seconds per cell")
+    p3.add_argument("--warmup", type=float, default=60.0)
+    p3.add_argument("--seed", type=int, default=0)
+    p3.add_argument("--slo-ttft", type=float, default=2.0)
+    p3.add_argument("--slo-itl", type=float, default=0.1)
+    p3.add_argument("--time-scale", type=float, default=1.0, help=">1 compresses the trace (mock only)")
+    p3.add_argument("--quick", action="store_true", help="short think times (testing)")
     a = ap.parse_args()
+    if a.cmd == "phase3":
+        sys.exit(phase3_cmd(a))
     if a.cmd == "phase2":
         sys.exit(phase2(a))
 
