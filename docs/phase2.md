@@ -47,3 +47,28 @@ python -m deploy.kaggle_run phase2 --external http://127.0.0.1:8001 --quick --ou
 | out of memory at startup | `--gpu-mem 0.85` or `--max-model-len 4096` |
 | bf16 error | should not happen (`--dtype float16` is set); check the model's config |
 | image request returns 400 mentioning `uuid` | the field is rejected: note it, rerun loadgen with `--no-image-uuids` |
+
+## Validation: when are the numbers usable?
+
+Every run ends with `validation.json` and a printed report ([`deploy/validate.py`](../deploy/validate.py)).
+`calibration_vllm.json` carries `"valid": true/false`, and the command exits with code 2 when
+anything FAILs. **Only numbers from a VALID run go into the README or a resume.**
+
+| step | FAIL when |
+|---|---|
+| smoke | text or image request broken; the model doesn't answer "Paris" to "What is the capital of France?" (fp16 sanity); an image description isn't readable text |
+| every experiment | any request error; any request without a TTFT; no usage details from the server; output length differs from what was requested |
+| text_cold / image_cold | a "cold" request hit the cache; prompt tokens don't grow with prompt length; image tokens ≠ images × tokens per image |
+| hits | the cold step hit the cache; a new question reused < 90% of the prompt; a hit wasn't faster than cold |
+| load | failed requests; missing TTFT; wrong output length; prompts weren't cold; degenerate output text (e.g. `!!!!!!`, one word repeated) |
+| fit | R² < 0.98; a coefficient significantly negative; fewer than 80% of image requests measured |
+
+WARN (reported, not blocking): repeats differ by more than 1.3×, throughput drops as load rises,
+the server's cache counters disagree with the per-request numbers by more than 5%.
+
+### First T4 run (2026-11-14): NOT VALID
+
+`calibration/results/phase2/validation_first_run.json`: the run predates the TTFT fix and the
+sanity question, so 10 of 18 cold image requests and 9 of 27 hit requests have no TTFT, and the
+image cost (4.9×) rests on 8 requests. The text-only measurements passed every check and are
+kept as a preview in `calibration_vllm_refit.json`; the rerun replaces them.

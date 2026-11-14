@@ -49,8 +49,10 @@ class Record:
     itl_s: list[float] = field(default_factory=list)   # gaps between content chunks
     output_chunks: int = 0
     prompt_tokens: int | None = None
+    completion_tokens: int | None = None   # from the server's usage report (exact token count)
     cached_tokens: int | None = None
     mm_tokens: dict | None = None     # prompt_tokens_details.multimodal_tokens, e.g. {"image": 512}
+    output_text: str = ""        # first ~300 chars of the reply (sanity check, e.g. fp16 garbage)
     status: int | None = None
     error: str | None = None
 
@@ -85,6 +87,7 @@ async def _send(session: aiohttp.ClientSession, url: str, body: dict, headers: d
     t0 = time.perf_counter()
     rec.sent_s = t0 - t_run0
     last = None
+    text: list[str] = []
     try:
         async with session.post(url.rstrip("/") + "/v1/chat/completions", json=body,
                                 headers=headers,
@@ -105,18 +108,28 @@ async def _send(session: aiohttp.ClientSession, url: str, body: dict, headers: d
                 if obj.get("usage"):
                     u = obj["usage"]
                     rec.prompt_tokens = u.get("prompt_tokens")
+                    rec.completion_tokens = u.get("completion_tokens")
                     det = u.get("prompt_tokens_details") or {}
                     rec.cached_tokens = det.get("cached_tokens")
                     rec.mm_tokens = det.get("multimodal_tokens")
                 for ch in obj.get("choices") or []:
-                    if (ch.get("delta") or {}).get("content"):
-                        now = time.perf_counter()
+                    content = (ch.get("delta") or {}).get("content")
+                    now = time.perf_counter()
+                    if content:
                         if last is None:
                             rec.ttft_s = now - t0
                         else:
                             rec.itl_s.append(round(now - last, 5))
                         last = now
                         rec.output_chunks += 1
+                        if len(text) < 300:
+                            text.append(content)
+                    elif ch.get("finish_reason") and rec.ttft_s is None:
+                        # A token was generated but decoded to "" (e.g. a partial UTF-8 byte or
+                        # a special token, common with max_tokens=1): the finish chunk is the
+                        # first sign of it.
+                        rec.ttft_s = now - t0
+        rec.output_text = "".join(text)[:300]
         rec.e2e_s = time.perf_counter() - t0
     except Exception as e:  # noqa: BLE001 - every failure is recorded, never raised
         rec.error = f"{type(e).__name__}: {e}"[:500]

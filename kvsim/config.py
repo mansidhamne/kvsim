@@ -24,20 +24,25 @@ class CostModel:
     image_cost_multiplier: float = 1.5    # vision tower + projector make image tokens
                                           # costlier to recompute than text (ASSUMPTION)
     fixed_overhead_s: float = 0.015       # scheduling + first-token + network floor
-    # Optional attention term: new tokens also attend to the cached prefix, so a hit is not
-    # entirely free. seconds per (new token x cached token). 0 = hits cost nothing extra.
+    # Optional attention term (causal attention is quadratic): each new token attends to the
+    # cached prefix and to the new tokens before it, so
+    #     extra = attn * new * (cached + new / 2)   seconds.
+    # It makes long cold prompts superlinear and makes a hit not entirely free.
+    # 0 = linear model. Fitted on a T4 with vLLM (calibration/results/phase2): ~3.2e-7.
     attn_s_per_token_pair: float = 0.0
 
     def prefill_time(self, weighted_blocks: float, cached_blocks: float = 0.0) -> float:
         new_tokens = weighted_blocks * self.block_size
         t = self.fixed_overhead_s + new_tokens / self.prefill_tokens_per_s
         if self.attn_s_per_token_pair:
-            t += self.attn_s_per_token_pair * new_tokens * cached_blocks * self.block_size
+            cached_tokens = cached_blocks * self.block_size
+            t += self.attn_s_per_token_pair * new_tokens * (cached_tokens + new_tokens / 2)
         return t
 
     @classmethod
     def from_calibration(cls, path, **overrides) -> "CostModel":
-        """Load the `cost_model` section written by calibration/01_prefill_and_cache.py."""
+        """Load the `cost_model` section of a calibration file (calibration/01_prefill_and_cache.py
+        or deploy/calibrate.py)."""
         import json
         fitted = json.load(open(path))["cost_model"]
         return cls(**{**fitted, **overrides})

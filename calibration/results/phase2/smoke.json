@@ -1,0 +1,116 @@
+{
+  "url": "http://127.0.0.1:8001",
+  "checks": {
+    "text_request_ok": true,
+    "image_with_uuid_ok": true,
+    "image_token_counts_reported": true,
+    "same_image_second_question_hits": true,
+    "all_metric_names_present": true
+  },
+  "text": {
+    "kind": "text",
+    "ttft_s": 0.9585883529998682,
+    "e2e_s": 1.0899363119999634,
+    "prompt_tokens": 46,
+    "cached_tokens": 0,
+    "mm_tokens": null,
+    "output_chunks": 8,
+    "status": 200,
+    "error": null,
+    "itl_p50_s": 0.01887
+  },
+  "images": {
+    "448x448": {
+      "first": {
+        "kind": "image",
+        "size": [
+          448,
+          448
+        ],
+        "ttft_s": 0.39276448900000105,
+        "e2e_s": 0.5010781230000703,
+        "prompt_tokens": 305,
+        "cached_tokens": 0,
+        "mm_tokens": {
+          "image": 256
+        },
+        "output_chunks": 8,
+        "status": 200,
+        "error": null,
+        "itl_p50_s": 0.01558
+      },
+      "second": {
+        "kind": "image_again",
+        "size": [
+          448,
+          448
+        ],
+        "ttft_s": 0.03752706099999159,
+        "e2e_s": 0.14490014600005452,
+        "prompt_tokens": 307,
+        "cached_tokens": 288,
+        "mm_tokens": {
+          "image": 256
+        },
+        "output_chunks": 8,
+        "status": 200,
+        "error": null,
+        "itl_p50_s": 0.01549
+      },
+      "image_tokens": 256
+    },
+    "672x448": {
+      "first": {
+        "kind": "image",
+        "size": [
+          672,
+          448
+        ],
+        "ttft_s": 0.2858629239999573,
+        "e2e_s": 0.39435866499979966,
+        "prompt_tokens": 435,
+        "cached_tokens": 0,
+        "mm_tokens": {
+          "image": 384
+        },
+        "output_chunks": 8,
+        "status": 200,
+        "error": null,
+        "itl_p50_s": 0.01554
+      },
+      "second": {
+        "kind": "image_again",
+        "size": [
+          672,
+          448
+        ],
+        "ttft_s": 0.04272762400000829,
+        "e2e_s": 0.15064835899988793,
+        "prompt_tokens": 437,
+        "cached_tokens": 416,
+        "mm_tokens": {
+          "image": 384
+        },
+        "output_chunks": 8,
+        "status": 200,
+        "error": null,
+        "itl_p50_s": 0.01563
+      },
+      "image_tokens": 384
+    }
+  },
+  "metrics_present": {
+    "vllm:prefix_cache_queries": true,
+    "vllm:prefix_cache_hits": true,
+    "vllm:num_requests_running": true,
+    "vllm:num_requests_waiting": true,
+    "vllm:kv_cache_usage_perc": true,
+    "vllm:time_to_first_token_seconds": true,
+    "vllm:inter_token_latency_seconds": true
+  },
+  "blocking": [
+    "text_request_ok",
+    "image_with_uuid_ok"
+  ],
+  "ok": true
+}

@@ -44,6 +44,8 @@ class MockConfig:
     decode_tps: float = 40.0              # output tokens per second per sequence
     image_patch: int = 28                 # Qwen2-VL: one token per 28x28 pixels
     time_scale: float = 1.0
+    empty_content: bool = False           # stream "" deltas (what vLLM sends when a token
+                                          # decodes to nothing); for loadgen tests
 
 
 # ---------------------------------------------------------------------------------- tokens
@@ -188,6 +190,23 @@ class MockEngine:
 ENGINE_KEY = web.AppKey("engine", MockEngine)
 
 
+_REPLY_WORDS = ("the image shows a small wooden table near a bright window with green plants "
+                "on the left and a red chair in the corner while soft light falls across").split()
+
+
+def _reply_tokens(messages: list[dict], n: int) -> list[str]:
+    """Readable fake output (so output checks can run on the mock): a fixed answer to the
+    sanity question, otherwise varied words."""
+    last = messages[-1].get("content", "") if messages else ""
+    if isinstance(last, list):
+        last = " ".join(p.get("text", "") for p in last if p.get("type") == "text")
+    if "capital of france" in str(last).lower():
+        words = ["Paris."]
+    else:
+        words = _REPLY_WORDS
+    return [(words[i % len(words)] + " ") for i in range(n)]
+
+
 def _chunk(rid: str, delta: dict, finish: str | None = None) -> bytes:
     obj = {"id": rid, "object": "chat.completion.chunk", "model": "mock",
            "choices": [{"index": 0, "delta": delta, "finish_reason": finish}]}
@@ -217,6 +236,7 @@ def make_app(cfg: MockConfig) -> web.Application:
         counter["n"] += 1
         rid = f"chatcmpl-{cfg.worker_id}-{counter['n']}"
         n_out = int(body.get("max_tokens") or 16)
+        reply = _reply_tokens(body.get("messages", []), n_out)
         job = await engine.prefill(body.get("messages", []))
         usage = {"prompt_tokens": job.n_tokens, "completion_tokens": n_out,
                  "total_tokens": job.n_tokens + n_out,
@@ -233,7 +253,7 @@ def make_app(cfg: MockConfig) -> web.Application:
                 return web.json_response({
                     "id": rid, "object": "chat.completion", "model": "mock",
                     "choices": [{"index": 0, "finish_reason": "length",
-                                 "message": {"role": "assistant", "content": "tok " * n_out}}],
+                                 "message": {"role": "assistant", "content": "".join(reply)}}],
                     "usage": usage}, headers=headers)
             resp = web.StreamResponse(headers={**headers, "Content-Type": "text/event-stream",
                                                "Cache-Control": "no-cache"})
@@ -242,7 +262,7 @@ def make_app(cfg: MockConfig) -> web.Application:
             for i in range(n_out):
                 if i:
                     await asyncio.sleep(gap)
-                await resp.write(_chunk(rid, {"content": "tok "}))
+                await resp.write(_chunk(rid, {"content": "" if cfg.empty_content else reply[i]}))
             await resp.write(_chunk(rid, {}, "length"))
             if (body.get("stream_options") or {}).get("include_usage"):
                 u = {"id": rid, "object": "chat.completion.chunk", "model": "mock",

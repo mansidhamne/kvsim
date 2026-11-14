@@ -97,4 +97,7 @@ def test_attention_term_makes_hits_cost_something():
     flat = CostModel()
     attn = CostModel(attn_s_per_token_pair=1e-8)
     assert attn.prefill_time(4, cached_blocks=100) > flat.prefill_time(4, cached_blocks=100)
-    assert attn.prefill_time(4, cached_blocks=0) == flat.prefill_time(4, cached_blocks=0)
+    # causal attention also makes a COLD prompt superlinear: doubling it more than doubles the term
+    assert attn.prefill_time(4, cached_blocks=0) > flat.prefill_time(4, cached_blocks=0)
+    extra = lambda n: attn.prefill_time(n) - flat.prefill_time(n)
+    assert abs(extra(8) / extra(4) - 4.0) < 1e-9

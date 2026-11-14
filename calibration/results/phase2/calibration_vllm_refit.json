@@ -1,0 +1,102 @@
+{
+  "cost_model": {
+    "block_size": 16,
+    "prefill_tokens_per_s": 9063.812232120556,
+    "image_cost_multiplier": 4.898677292466634,
+    "fixed_overhead_s": 0.03564704818158425,
+    "attn_s_per_token_pair": 3.157430889054757e-07
+  },
+  "fit": {
+    "n": 47,
+    "r2": 0.99922082655692,
+    "overhead_s": 0.03564704818158425,
+    "s_per_text_token": 0.00011032885218607861,
+    "s_per_image_token": 0.0005404654429078511,
+    "attn_s_per_token_pair": 3.157430889054757e-07,
+    "linear_only": {
+      "r2": 0.9559081824012485,
+      "tokens_per_s": 1324.38712252477,
+      "overhead_s": -0.13755843860320327
+    }
+  },
+  "image_tokens_per_image": {
+    "448x448": [
+      256
+    ],
+    "672x448": [
+      384
+    ]
+  },
+  "hits": {
+    "hits_text.cold": {
+      "ttft_mean_s": 1.7502066616666525,
+      "cached_frac": 0.0
+    },
+    "hits_text.new_question": {
+      "ttft_mean_s": 0.07047616533335106,
+      "cached_frac": 0.9917734838339392
+    },
+    "hits_text.identical": {
+      "ttft_mean_s": 0.05257373683332389,
+      "cached_frac": 0.997895542376124
+    }
+  },
+  "load": [
+    {
+      "concurrency": 1,
+      "req_per_s": 0.7313693428834009,
+      "output_tok_per_s": 46.80763794453766,
+      "ttft_p50_s": 0.3197266509998826,
+      "ttft_p99_s": 0.32599907183997856,
+      "itl_p50_s": 0.01665,
+      "itl_p99_s": 0.016826800000000003
+    },
+    {
+      "concurrency": 2,
+      "req_per_s": 1.152988716168476,
+      "output_tok_per_s": 73.79127783478246,
+      "ttft_p50_s": 0.48499374599998646,
+      "ttft_p99_s": 0.6408006071799582,
+      "itl_p50_s": 0.0175,
+      "itl_p99_s": 0.017564899999999998
+    },
+    {
+      "concurrency": 4,
+      "req_per_s": 1.6581158533889708,
+      "output_tok_per_s": 106.11941461689413,
+      "ttft_p50_s": 0.8982727489999434,
+      "ttft_p99_s": 1.2181064105000132,
+      "itl_p50_s": 0.0189,
+      "itl_p99_s": 0.01897
+    },
+    {
+      "concurrency": 8,
+      "req_per_s": 2.099352260710066,
+      "output_tok_per_s": 134.35854468544423,
+      "ttft_p50_s": 0.9425632524998946,
+      "ttft_p99_s": 2.3762502068000457,
+      "itl_p50_s": 0.02267,
+      "itl_p99_s": 0.02275
+    },
+    {
+      "concurrency": 16,
+      "req_per_s": 2.4733395437395034,
+      "output_tok_per_s": 158.29373079932822,
+      "ttft_p50_s": 1.6999777790000508,
+      "ttft_p99_s": 4.66305155565014,
+      "itl_p50_s": 0.02955,
+      "itl_p99_s": 0.02967
+    },
+    {
+      "concurrency": 32,
+      "req_per_s": 2.7120555572244083,
+      "output_tok_per_s": 173.57155566236213,
+      "ttft_p50_s": 2.035989078499938,
+      "ttft_p99_s": 9.231306092839981,
+      "itl_p50_s": 0.04588,
+      "itl_p99_s": 0.0460746
+    }
+  ],
+  "note": "NOT VALID as a whole (see validation_first_run.json): image TTFTs missing and no fp16 sanity check. Text-only rows passed all checks. Superseded by the rerun.",
+  "valid": false
+}

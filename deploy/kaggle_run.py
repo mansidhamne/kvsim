@@ -27,6 +27,7 @@ from pathlib import Path
 
 from bench.workload import ImagePool
 from deploy.calibrate import CalibConfig, calibrate, fit, plot, save, smoke, vllm_backend_lines
+from deploy.validate import print_report, validate_run
 from deploy.workers import ServeConfig, VllmWorkers, WorkerSpec
 
 
@@ -55,6 +56,7 @@ def env_info() -> dict:
 
 def _print_checks(sm: dict) -> None:
     print("\nSmoke check")
+    print(f"  sample reply (fp16 sanity): {sm.get('sanity_reply', '')!r}")
     for k, v in sm["checks"].items():
         label = "PASS" if v else ("FAIL" if k in sm.get("blocking", []) else "WARN")
         print(f"  {label}  {k}")
@@ -91,7 +93,9 @@ def phase2(a: argparse.Namespace) -> int:
         sm = asyncio.run(smoke(url, cfg, pool))
         save(sm, out / "smoke.json")
         _print_checks(sm)
-        if not sm["ok"] and not a.force:
+        smoke_report = validate_run(sm, None, None)
+        print_report(smoke_report)
+        if not smoke_report["ok"] and not a.force:
             print("\nSmoke check failed; stopping. Fix the issue (see smoke.json and logs/) "
                   "or rerun with --force to calibrate anyway.")
             return 1
@@ -99,16 +103,23 @@ def phase2(a: argparse.Namespace) -> int:
             return 0
 
         print("\nCalibration")
-        raw = asyncio.run(calibrate(url, cfg, pool))
+        only = tuple(a.experiments.split(","))
+        raw = asyncio.run(calibrate(url, cfg, pool, only=only))
         save(raw, out / "calibration_raw.json")
 
     fitted = fit(raw, block_size=serve.block_size)
     fitted["env"] = {k: info.get(k) for k in ("nvidia_smi", "vllm", "python", "time")}
+    report = validate_run(sm, raw, fitted, block_size=serve.block_size)
+    save(report, out / "validation.json")
+    fitted["valid"] = report["ok"]
+    fitted["validation_counts"] = report["counts"]
     save(fitted, out / "calibration_vllm.json")
     plot(raw, fitted, out / "calibration_vllm.png")
     cm, f = fitted["cost_model"], fitted["fit"]
-    print(f"\nprefill: {cm['prefill_tokens_per_s'] or 0:.0f} tok/s, overhead {cm['fixed_overhead_s'] * 1e3:.0f} ms, "
-          f"image cost x{cm['image_cost_multiplier'] or 0:.2f}, R2 {f['r2']:.3f}")
+    print(f"\nprefill: {cm['prefill_tokens_per_s'] or 0:.0f} tok/s linear part, attention "
+          f"{cm['attn_s_per_token_pair']:.2e} s/tok^2, overhead {cm['fixed_overhead_s'] * 1e3:.0f} ms, "
+          f"image cost x{cm['image_cost_multiplier'] or 0:.2f}, R2 {f['r2']:.4f} "
+          f"(linear-only R2 {f['linear_only']['r2']:.3f})")
     print("image tokens per image:", fitted["image_tokens_per_image"])
     for k, v in fitted["hits"].items():
         print(f"  {k:28s} TTFT {v['ttft_mean_s'] * 1e3:7.1f} ms   cached {v['cached_frac']:.0%}")
@@ -116,8 +127,9 @@ def phase2(a: argparse.Namespace) -> int:
         print(f"  concurrency {r['concurrency']:3d}: TTFT p50 {r['ttft_p50_s'] or 0:.3f}s "
               f"p99 {r['ttft_p99_s'] or 0:.3f}s  ITL p50 {r['itl_p50_s'] or 0:.4f}s  "
               f"{r['req_per_s'] or 0:.2f} req/s")
+    print_report(report)
     print(f"\nResults in {out}")
-    return 0
+    return 0 if report["ok"] else 2
 
 
 def main() -> None:
@@ -135,6 +147,8 @@ def main() -> None:
     p2.add_argument("--images", help="folder of real photos (e.g. COCO val2017); default synthetic")
     p2.add_argument("--quick", action="store_true", help="tiny experiment sizes (for testing)")
     p2.add_argument("--smoke-only", action="store_true")
+    p2.add_argument("--experiments", default="text_cold,image_cold,hits,load",
+                    help="comma-separated subset to run (e.g. skip the 5-minute load sweep)")
     p2.add_argument("--force", action="store_true", help="calibrate even if the smoke check fails")
     a = ap.parse_args()
     if a.cmd == "phase2":
