@@ -153,3 +153,37 @@ def test_router_passthrough_models_and_completions():
     assert log[1]["actual_cached_tokens"] > 0.8 * log[1]["prompt_tokens"]
     assert plain[0] == 200 and plain[1]["choices"][0]["text"]
     assert all("router_ttft_s" in r for r in log)
+
+
+def test_image_weight_is_not_squared_by_attention():
+    """Run-1 bug: the image cost multiplier was applied before the quadratic attention term,
+    so image-heavy prompts were estimated ~9x too slow. Attention must use raw tokens."""
+    cost = CostModel(block_size=16, prefill_tokens_per_s=11_000, image_cost_multiplier=6.0,
+                     fixed_overhead_s=0.04, attn_s_per_token_pair=3.2e-7)
+    msgs = [{"role": "user", "content": [
+        {"type": "image_url", "uuid": f"img{i}", "image_url": {"url": ImagePool().data_url(
+            __import__("bench.workload", fromlist=["ImageRef"]).ImageRef(i, 448, 448))}}
+        for i in range(8)] + [{"type": "text", "text": "describe " * 200}]}]
+    info = prompt_info(msgs, 16, cost.image_cost_multiplier)
+    from router.policies import _Req
+    est = cost.request_prefill_time(_Req(info, "c"), 0)
+    raw, img = info.n_tokens, info.n_image_tokens
+    expected = 0.04 + (raw + img * 5.0) / 11_000 + 3.2e-7 * raw * raw / 2
+    assert abs(est - expected) < 1e-6
+    assert est < 3.0            # the buggy formula gave ~20 s for this 2.3k-token prompt
+
+
+def test_validation_fails_on_unrealistic_estimates():
+    from deploy.validate import validate_phase3
+    base = {"errors": 0, "requests": 100, "hit_rate": 0.8, "late_frac": 0.0, "sample_outputs": [],
+            "estimate_ratio_n": 50}
+    cells = [{"active_convs": 12, "policy": p, "trace_fingerprint": "x", "reset_ok": [True],
+              "server": {"prefix_hits": 10.0}, "client_all": {"cached_tokens": 10, "requests": 100},
+              "summary": {**base, "estimate_ratio_median": r}}
+             for p, r in (("round_robin", 9.0), ("cache_aware", 9.0), ("least_loaded", 1.1))]
+    rep = validate_phase3(cells)
+    st = {(c["name"].split(":")[0]): c["status"] for c in rep["checks"] if "estimates" in c["name"]}
+    assert st["12 convs / cache_aware"] == "FAIL"
+    assert st["12 convs / round_robin"] == "WARN"       # doesn't act on estimates
+    assert st["12 convs / least_loaded"] == "PASS"
+    assert not rep["ok"]

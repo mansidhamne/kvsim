@@ -339,10 +339,20 @@ def validate_phase3(cells: list[dict], block_size: int = 16) -> dict:
         if (s.get("late_frac") or 0) > 0.2:
             checks.append(Check("phase3", f"{tag}: follow-ups sent on schedule", WARN,
                                 f"{s['late_frac']:.0%} of turns > 1 s late (system overloaded for this trace)"))
-        if s.get("prediction_exact_frac") is not None and c["policy"] == "cache_aware":
+        if s.get("prediction_share_within5pp") is not None and c["policy"] == "cache_aware":
             checks.append(Check("phase3", f"{tag}: router's predicted reuse matches the engine",
-                                PASS if s["prediction_exact_frac"] >= 0.7 else WARN,
-                                f"{s['prediction_exact_frac']:.0%} within one block; "
-                                f"mean error {s['prediction_mae_tokens']:.0f} tokens"))
+                                PASS if s["prediction_share_within5pp"] >= 0.9 else WARN,
+                                f"{s['prediction_share_within5pp']:.0%} of requests within 5 points of the "
+                                f"engine's cached share; bias {s.get('prediction_bias_tokens') or 0:+.0f} tokens"))
+        # Policies that act on prefill-time estimates are only meaningful if the estimates are
+        # realistic. Caught the run-1 bug (image weight inside the quadratic term, ~9x too high).
+        r = s.get("estimate_ratio_median")
+        if r is not None and s.get("estimate_ratio_n", 0) >= 10:
+            uses = c["policy"] in ("least_loaded", "session_affinity", "cache_aware")
+            good = 0.5 <= r <= 2.0
+            checks.append(Check("phase3", f"{tag}: router's prefill estimates are realistic",
+                                PASS if good else (FAIL if uses else WARN),
+                                f"median estimate / measured TTFT = {r:.2f} over {s['estimate_ratio_n']} "
+                                f"mostly-uncached requests with no backlog (should be 0.5-2)"))
     counts = {k: sum(ch.status == k for ch in checks) for k in (PASS, WARN, FAIL)}
     return {"ok": counts[FAIL] == 0, "counts": counts, "checks": [asdict(ch) for ch in checks]}

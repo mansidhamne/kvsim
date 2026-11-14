@@ -16,6 +16,18 @@ def _pct(xs, q):
     return float(np.percentile(xs, q)) if len(xs) else None
 
 
+def bootstrap_ci(values, stat, n: int = 1000, seed: int = 0, level: float = 0.95):
+    """Percentile bootstrap CI of `stat(values)` (resampling requests). Tells you whether two
+    policies' numbers differ by more than run-to-run noise would."""
+    v = np.asarray(values, dtype=float)
+    if len(v) < 5:
+        return None
+    rng = np.random.default_rng(seed)
+    sims = [stat(v[rng.integers(0, len(v), len(v))]) for _ in range(n)]
+    lo, hi = np.percentile(sims, [(1 - level) / 2 * 100, (1 + level) / 2 * 100])
+    return [float(lo), float(hi)]
+
+
 def summarize_cell(records: list[dict], decisions: list[dict], warmup_s: float,
                    slo_ttft_s: float, slo_itl_s: float, block_size: int = 16,
                    max_tokens: dict | None = None) -> dict:
@@ -40,6 +52,25 @@ def summarize_cell(records: list[dict], decisions: list[dict], warmup_s: float,
     dms = [d["decision_ms"] for d in dec if "decision_ms" in d]
     pred = [(d.get("predicted_resident_tokens", 0), d.get("actual_cached_tokens"))
             for d in dec if d.get("actual_cached_tokens") is not None]
+    # share of the prompt predicted to be cached vs the engine's answer (robust to the router
+    # counting words while the engine counts model tokens, ~2% apart)
+    share_err = [abs(d.get("predicted_resident_tokens", 0) / max(1, d.get("prompt_tokens_est") or 1)
+                     - d["actual_cached_tokens"] / max(1, d.get("prompt_tokens") or 1))
+                 for d in dec if d.get("actual_cached_tokens") is not None and d.get("prompt_tokens")]
+    # Is the router's prefill estimate realistic? Compare it to the measured TTFT on requests
+    # that found the chosen worker with no prefill backlog (TTFT is then ~ prefill time) and
+    # were mostly NOT cached: that's where the expensive terms (images, attention) dominate.
+    # Cache hits are cheap and easy to estimate, so including them would hide a bad model.
+    est_ratio, est_ratio_hits = [], []
+    for d in dec:
+        sc = d.get("scores") or []
+        i = int(d["worker"][1:]) if str(d.get("worker", "")).startswith("w") else None
+        if (i is None or i >= len(sc) or sc[i]["backlog_s"] >= 0.05 or not d.get("router_ttft_s")
+                or d["router_ttft_s"] <= 0.05 or d.get("actual_cached_tokens") is None):
+            continue
+        ratio = d["est_prefill_s"] / d["router_ttft_s"]
+        cached_share = d["actual_cached_tokens"] / max(1, d.get("prompt_tokens") or 1)
+        (est_ratio if cached_share < 0.5 else est_ratio_hits).append(ratio)
     routing_miss = []
     for d in dec:
         hits = [s["hit_blocks"] for s in d.get("scores") or []]
@@ -70,6 +101,15 @@ def summarize_cell(records: list[dict], decisions: list[dict], warmup_s: float,
         "decision_ms_p50": _pct(dms, 50), "decision_ms_p99": _pct(dms, 99),
         "prediction_exact_frac": (sum(abs(p - a) <= block_size for p, a in pred) / len(pred)) if pred else None,
         "prediction_mae_tokens": float(np.mean([abs(p - a) for p, a in pred])) if pred else None,
+        "prediction_bias_tokens": float(np.mean([p - a for p, a in pred])) if pred else None,
+        "prediction_share_within5pp": (float(np.mean([e <= 0.05 for e in share_err])) if share_err else None),
+        "estimate_ratio_median": float(np.median(est_ratio)) if est_ratio else None,
+        "estimate_ratio_n": len(est_ratio),
+        "estimate_ratio_hits_median": float(np.median(est_ratio_hits)) if est_ratio_hits else None,
+        "ttft_p99_ci": bootstrap_ci(ttft, lambda x: np.percentile(x, 99)),
+        "ttft_p50_ci": bootstrap_ci(ttft, lambda x: np.percentile(x, 50)),
+        "goodput_ci": bootstrap_ci([1.0 if r in good else 0.0 for r in ok] +
+                                   [0.0] * (len(meas) - len(ok)), np.mean),
         "routing_miss_tokens_per_req": float(np.mean(routing_miss)) if routing_miss else None,
         "wrong_output_len": wrong_len,
         "sample_outputs": [r.get("output_text", "")[:120] for r in ok[:3]],
@@ -77,8 +117,17 @@ def summarize_cell(records: list[dict], decisions: list[dict], warmup_s: float,
 
 
 def load_jsonl(path: str | Path) -> tuple[dict | None, list[dict]]:
+    """Reads `x.jsonl` or `x.jsonl.gz` (archived runs are gzipped)."""
+    path = Path(path)
+    if not path.exists() and Path(str(path) + ".gz").exists():
+        path = Path(str(path) + ".gz")
+    if path.suffix == ".gz":
+        import gzip
+        text = gzip.open(path, "rt").read()
+    else:
+        text = path.read_text()
     meta, rows = None, []
-    for line in Path(path).read_text().splitlines():
+    for line in text.splitlines():
         if not line.strip():
             continue
         obj = json.loads(line)

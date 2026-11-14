@@ -95,7 +95,9 @@ async def run_cell(urls: list[str], policy: str, trace, pool: ImagePool, cost: C
     async with RouterRunner(rcfg) as rr:
         await asyncio.sleep(1.0)                 # first /metrics scrape (KV capacity)
         capacity = [c.capacity for c in rr.router.index.caches]
-        records = await replay(trace, pool, [rr.url], time_scale=cfg.time_scale, opts=opts)
+        progress(f"  {policy}: replaying {trace.n_requests()} requests (prints every 60 s)")
+        records = await replay(trace, pool, [rr.url], time_scale=cfg.time_scale, opts=opts,
+                               progress=progress, progress_every_s=60.0 / cfg.time_scale)
         decisions = list(rr.router.log_rows)
     wall = time.perf_counter() - t0
     after = await worker_counters(urls)

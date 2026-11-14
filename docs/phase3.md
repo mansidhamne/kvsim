@@ -90,4 +90,56 @@ python -m deploy.kaggle_run phase3 --external http://127.0.0.1:8001,http://127.0
 ```
 
 On Kaggle: import [`deploy/kaggle_phase3.ipynb`](../deploy/kaggle_phase3.ipynb), GPU T4 x2,
-Internet on, Run All (~75-90 min).
+Internet on, Run All (~95 min: each policy replays ~8 min of real traffic per load level, with a status line every 60 s).
+
+## Runs
+
+### Run 1 (2026-11-14, 2x T4, Qwen2-VL-2B): NOT VALID for the policies that use estimates
+
+Files: `results/phase3/run1/` (per-request logs gzipped). The run itself completed cleanly: 0
+errors, caches reset before every policy, server and client cache counters identical, the same
+trace (same total prompt tokens) for every policy. Re-analysis with the later checks
+(`validation_reanalysis.json`) found a bug in the router's cost estimates:
+
+**The bug.** The cost model weighted image tokens 5.9x (vision encoder) and then fed the
+*weighted* token count into the quadratic attention term, so image-heavy cold prompts were
+estimated ~9x too slow (median 9 s estimated vs 1 s measured; up to 30 s for a request that took
+2.2 s). Fixed: attention uses raw tokens, only the linear part is weighted. On the same requests
+the corrected estimates are 1.06-1.10x the measured TTFT (p10-p90: 0.8-1.3x). A new FAIL check
+compares estimates with measured TTFT on mostly-uncached requests, and a regression test pins
+the formula.
+
+**What it affected.** least_loaded, session_affinity (its first-turn placement) and cache_aware
+act on these estimates. cache_aware moved 2% (12 convs) and 6% (24 convs) of follow-up turns away
+from the worker that held their cache, because it believed that worker had a 13-17 s backlog
+(real waits were well under 1 s). Those moved turns hit only 35-56% of their prompt.
+round_robin and least_requests don't use estimates, so their numbers stand.
+
+**Results that stand** (cache-blind baselines; 95% bootstrap CIs):
+
+| convs | policy | hit | TTFT p50 | TTFT p99 [CI] | ITL p99 | goodput [CI] |
+|---|---|---|---|---|---|---|
+| 12 | round_robin | 0.75 | 0.33 s | 2.41 s [2.11, 2.58] | 0.30 s | 0.96 [0.95, 0.98] |
+| 12 | least_requests | 0.75 | 0.33 s | 2.46 s [2.11, 2.96] | 0.25 s | 0.96 [0.94, 0.98] |
+| 24 | round_robin | 0.75 | 0.41 s | 4.41 s [3.92, 5.02] | 0.80 s | 0.78 [0.75, 0.81] |
+| 24 | least_requests | 0.76 | 0.40 s | 3.13 s [2.80, 3.66] | 0.68 s | 0.87 [0.85, 0.89] |
+
+**Indicative only** (estimates 7-11x too high): session_affinity 0.85-0.86 hit, p99 1.97 s /
+2.09 s, goodput 0.99 / 0.97; cache_aware 0.84-0.85 hit, p99 1.73 s / 2.39 s, goodput 1.00 / 0.95.
+Even with the bug, cache-aware routing roughly halved TTFT p99 vs round-robin at 24 convs.
+
+**Other findings**
+
+* The router's view of each cache is accurate: predicted cached share within 5 points of the
+  engine's for 99-100% of requests (1 large miss in 990). Predictions run ~32 tokens low because
+  the router counts words and the tokenizer produces ~2% more tokens; the old "within one block"
+  check flagged this as a 32-37% match, so it was replaced by the share-based check.
+* With 2 workers and ~200k tokens of KV cache each (12,636 blocks, read from
+  `vllm:cache_config_info`), nothing is evicted, so even round-robin reuses 75%: a miss leaves a
+  second copy behind. Follow-ups that stayed on their worker reused 92-93% of the prompt; moved
+  ones 61-67%.
+* At 24 convs the system is overloaded for round_robin (36% of follow-ups sent > 1 s late);
+  least_requests' load awareness alone cuts TTFT p99 from 4.4 s to 3.1 s.
+
+**Next run:** same notebook, all five policies again (the cache-blind ones double as a
+run-to-run noise check). Then a scarce-cache run (`--num-gpu-blocks-override`, or 4 workers).

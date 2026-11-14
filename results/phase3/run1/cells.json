@@ -1,0 +1,592 @@
+[
+  {
+    "policy": "round_robin",
+    "active_convs": 12,
+    "trace_fingerprint": "f5c0bd0b5a5b",
+    "wall_s": 465.8,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 831616.0,
+      "prefix_queries": 1133625.0
+    },
+    "client_all": {
+      "cached_tokens": 831616,
+      "prompt_tokens": 1133625,
+      "requests": 526
+    },
+    "summary": {
+      "requests": 476,
+      "ok": 476,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7496119071450832,
+      "prompt_tokens_mean": 2163.9432773109243,
+      "recomputed_tokens_per_req": 541.8256302521008,
+      "ttft_p50_s": 0.3332479689999559,
+      "ttft_p90_s": 1.3961048070000288,
+      "ttft_p99_s": 2.4107391227500443,
+      "ttft_mean_s": 0.5763017958634474,
+      "itl_p50_s": 0.02175,
+      "itl_p99_s": 0.30152080000000026,
+      "e2e_p50_s": 3.38197698350001,
+      "goodput_frac": 0.9642857142857143,
+      "goodput_rps": 1.1347091106156124,
+      "throughput_rps": 1.176735373971746,
+      "late_frac": 0.13445378151260504,
+      "per_worker": {
+        "w0": 237,
+        "w1": 239
+      },
+      "imbalance": 1.004201680672269,
+      "decision_ms_p50": 2.3810000000000002,
+      "decision_ms_p99": 5.03125,
+      "prediction_exact_frac": 0.4579831932773109,
+      "prediction_mae_tokens": 25.81512605042017,
+      "routing_miss_tokens_per_req": 229.109243697479,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "door(1,187),(166,546), green in center glass new red below every where dog old street compare near above light metal fro",
+        "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+        "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+      ]
+    }
+  },
+  {
+    "policy": "least_requests",
+    "active_convs": 12,
+    "trace_fingerprint": "f5c0bd0b5a5b",
+    "wall_s": 465.4,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 835792.0,
+      "prefix_queries": 1133625.0
+    },
+    "client_all": {
+      "cached_tokens": 835792,
+      "prompt_tokens": 1133625,
+      "requests": 526
+    },
+    "summary": {
+      "requests": 476,
+      "ok": 476,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7536971972851461,
+      "prompt_tokens_mean": 2163.9432773109243,
+      "recomputed_tokens_per_req": 532.9852941176471,
+      "ttft_p50_s": 0.33382339250010773,
+      "ttft_p90_s": 1.5785680779998756,
+      "ttft_p99_s": 2.4558581629999594,
+      "ttft_mean_s": 0.6087746999621872,
+      "itl_p50_s": 0.02176,
+      "itl_p99_s": 0.24676279999999592,
+      "e2e_p50_s": 3.444854247999956,
+      "goodput_frac": 0.957983193277311,
+      "goodput_rps": 1.1280750531676897,
+      "throughput_rps": 1.1775520291838166,
+      "late_frac": 0.13655462184873948,
+      "per_worker": {
+        "w0": 241,
+        "w1": 235
+      },
+      "imbalance": 1.0126050420168067,
+      "decision_ms_p50": 2.5175,
+      "decision_ms_p99": 4.5465,
+      "prediction_exact_frac": 0.4474789915966387,
+      "prediction_mae_tokens": 25.983193277310924,
+      "routing_miss_tokens_per_req": 220.43697478991598,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "door(1,187),(166,546), green in center glass new red below every where dog old street compare near above light metal fro",
+        "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+        "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+      ]
+    }
+  },
+  {
+    "policy": "least_loaded",
+    "active_convs": 12,
+    "trace_fingerprint": "f5c0bd0b5a5b",
+    "wall_s": 465.6,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 826336.0,
+      "prefix_queries": 1133625.0
+    },
+    "client_all": {
+      "cached_tokens": 826336,
+      "prompt_tokens": 1133625,
+      "requests": 526
+    },
+    "summary": {
+      "requests": 476,
+      "ok": 476,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7453246825114049,
+      "prompt_tokens_mean": 2163.9432773109243,
+      "recomputed_tokens_per_req": 551.1029411764706,
+      "ttft_p50_s": 0.31968156949994864,
+      "ttft_p90_s": 1.365844627499996,
+      "ttft_p99_s": 2.294241085250121,
+      "ttft_mean_s": 0.5632128714222685,
+      "itl_p50_s": 0.02215,
+      "itl_p99_s": 0.3442013,
+      "e2e_p50_s": 3.5232389365000927,
+      "goodput_frac": 0.9789915966386554,
+      "goodput_rps": 1.1521570317740952,
+      "throughput_rps": 1.1768814315975735,
+      "late_frac": 0.14285714285714285,
+      "per_worker": {
+        "w0": 229,
+        "w1": 247
+      },
+      "imbalance": 1.0378151260504203,
+      "decision_ms_p50": 2.5575,
+      "decision_ms_p99": 4.92925,
+      "prediction_exact_frac": 0.4579831932773109,
+      "prediction_mae_tokens": 25.478991596638654,
+      "routing_miss_tokens_per_req": 238.05042016806723,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "door(1,187),(166,546), green in center glass new red below every where dog old street compare near above light metal fro",
+        "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+        "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+      ]
+    }
+  },
+  {
+    "policy": "session_affinity",
+    "active_convs": 12,
+    "trace_fingerprint": "f5c0bd0b5a5b",
+    "wall_s": 465.3,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 952800.0,
+      "prefix_queries": 1133625.0
+    },
+    "client_all": {
+      "cached_tokens": 952800,
+      "prompt_tokens": 1133625,
+      "requests": 526
+    },
+    "summary": {
+      "requests": 476,
+      "ok": 476,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.8515732929982127,
+      "prompt_tokens_mean": 2163.9432773109243,
+      "recomputed_tokens_per_req": 321.18697478991595,
+      "ttft_p50_s": 0.24611582549982813,
+      "ttft_p90_s": 0.9813214564999271,
+      "ttft_p99_s": 1.972075568750256,
+      "ttft_mean_s": 0.39241053903781103,
+      "itl_p50_s": 0.02186,
+      "itl_p99_s": 0.18932520000000078,
+      "e2e_p50_s": 3.146945285000129,
+      "goodput_frac": 0.9894957983193278,
+      "goodput_rps": 1.1653249287728378,
+      "throughput_rps": 1.1776956817322097,
+      "late_frac": 0.10714285714285714,
+      "per_worker": {
+        "w0": 207,
+        "w1": 269
+      },
+      "imbalance": 1.1302521008403361,
+      "decision_ms_p50": 2.4555,
+      "decision_ms_p99": 4.98175,
+      "prediction_exact_frac": 0.31092436974789917,
+      "prediction_mae_tokens": 32.134453781512605,
+      "routing_miss_tokens_per_req": 14.789915966386555,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "door(1,187),(166,546), green in center glass new red below every where dog old street compare near above light metal fro",
+        "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+        "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+      ]
+    }
+  },
+  {
+    "policy": "cache_aware",
+    "active_convs": 12,
+    "trace_fingerprint": "f5c0bd0b5a5b",
+    "wall_s": 465.3,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 947504.0,
+      "prefix_queries": 1133625.0
+    },
+    "client_all": {
+      "cached_tokens": 947504,
+      "prompt_tokens": 1133625,
+      "requests": 526
+    },
+    "summary": {
+      "requests": 476,
+      "ok": 476,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.8497558825556751,
+      "prompt_tokens_mean": 2163.9432773109243,
+      "recomputed_tokens_per_req": 325.1197478991597,
+      "ttft_p50_s": 0.24159793349986103,
+      "ttft_p90_s": 0.9559711119998155,
+      "ttft_p99_s": 1.7337428255000304,
+      "ttft_mean_s": 0.37931266975839806,
+      "itl_p50_s": 0.02184,
+      "itl_p99_s": 0.18158,
+      "e2e_p50_s": 3.1061774575000527,
+      "goodput_frac": 0.9957983193277311,
+      "goodput_rps": 1.1727613335836795,
+      "throughput_rps": 1.1777096936409945,
+      "late_frac": 0.10294117647058823,
+      "per_worker": {
+        "w0": 269,
+        "w1": 207
+      },
+      "imbalance": 1.1302521008403361,
+      "decision_ms_p50": 2.5235,
+      "decision_ms_p99": 5.3275,
+      "prediction_exact_frac": 0.32142857142857145,
+      "prediction_mae_tokens": 31.73109243697479,
+      "routing_miss_tokens_per_req": 18.319327731092436,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "door(1,187),(166,546), green in center glass new red below every where dog old street compare near above light metal fro",
+        "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+        "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+      ]
+    }
+  },
+  {
+    "policy": "round_robin",
+    "active_convs": 24,
+    "trace_fingerprint": "dce6c061d7ae",
+    "wall_s": 526.4,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 1496352.0,
+      "prefix_queries": 2040406.0
+    },
+    "client_all": {
+      "cached_tokens": 1496352,
+      "prompt_tokens": 2040406,
+      "requests": 990
+    },
+    "summary": {
+      "requests": 895,
+      "ok": 895,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7481486406787119,
+      "prompt_tokens_mean": 2066.8793296089384,
+      "recomputed_tokens_per_req": 520.5463687150838,
+      "ttft_p50_s": 0.41127387200003795,
+      "ttft_p90_s": 1.9898901163998743,
+      "ttft_p99_s": 4.4100546021802245,
+      "ttft_mean_s": 0.8416353035072542,
+      "itl_p50_s": 0.03166,
+      "itl_p99_s": 0.7950515,
+      "e2e_p50_s": 6.499817788999735,
+      "goodput_frac": 0.7810055865921788,
+      "goodput_rps": 1.5022992083790019,
+      "throughput_rps": 1.9235447660932856,
+      "late_frac": 0.36312849162011174,
+      "per_worker": {
+        "w0": 445,
+        "w1": 450
+      },
+      "imbalance": 1.005586592178771,
+      "decision_ms_p50": 2.388,
+      "decision_ms_p99": 4.820139999999996,
+      "prediction_exact_frac": 0.48379888268156424,
+      "prediction_mae_tokens": 28.210055865921788,
+      "routing_miss_tokens_per_req": 224.07150837988826,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "skiing(221,58),(574,899)(343,221),(666,630)(174,54),(574,899)(419,2),(984,987)(174,54),(574,899)(174,54),(574,899)(174,5",
+        "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+        "table scene large old left mood detail light third on dog background in water every with sky below new above looks or or"
+      ]
+    }
+  },
+  {
+    "policy": "least_requests",
+    "active_convs": 24,
+    "trace_fingerprint": "dce6c061d7ae",
+    "wall_s": 526.3,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 1519392.0,
+      "prefix_queries": 2040406.0
+    },
+    "client_all": {
+      "cached_tokens": 1519392,
+      "prompt_tokens": 2040406,
+      "requests": 990
+    },
+    "summary": {
+      "requests": 895,
+      "ok": 895,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7597733230190226,
+      "prompt_tokens_mean": 2066.8793296089384,
+      "recomputed_tokens_per_req": 496.5195530726257,
+      "ttft_p50_s": 0.3995206039999175,
+      "ttft_p90_s": 1.6741429628000333,
+      "ttft_p99_s": 3.1263904021798927,
+      "ttft_mean_s": 0.7188394415810153,
+      "itl_p50_s": 0.03077,
+      "itl_p99_s": 0.6786590000000005,
+      "e2e_p50_s": 6.179684537999947,
+      "goodput_frac": 0.870391061452514,
+      "goodput_rps": 1.674876269184489,
+      "throughput_rps": 1.9242801808987389,
+      "late_frac": 0.3206703910614525,
+      "per_worker": {
+        "w0": 465,
+        "w1": 430
+      },
+      "imbalance": 1.0391061452513966,
+      "decision_ms_p50": 2.469,
+      "decision_ms_p99": 5.0704799999999945,
+      "prediction_exact_frac": 0.464804469273743,
+      "prediction_mae_tokens": 30.230167597765362,
+      "routing_miss_tokens_per_req": 201.6,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+        "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+        "table scene large old left mood detail light third on dog background in water every with sky below new above looks or or"
+      ]
+    }
+  },
+  {
+    "policy": "least_loaded",
+    "active_convs": 24,
+    "trace_fingerprint": "dce6c061d7ae",
+    "wall_s": 526.4,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 1516128.0,
+      "prefix_queries": 2040406.0
+    },
+    "client_all": {
+      "cached_tokens": 1516128,
+      "prompt_tokens": 2040406,
+      "requests": 990
+    },
+    "summary": {
+      "requests": 895,
+      "ok": 895,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7575763964457793,
+      "prompt_tokens_mean": 2066.8793296089384,
+      "recomputed_tokens_per_req": 501.06033519553074,
+      "ttft_p50_s": 0.38951856899984705,
+      "ttft_p90_s": 1.607919254199988,
+      "ttft_p99_s": 2.961433406180093,
+      "ttft_mean_s": 0.6736282918860321,
+      "itl_p50_s": 0.03172,
+      "itl_p99_s": 0.6715226999999999,
+      "e2e_p50_s": 6.332186643000568,
+      "goodput_frac": 0.8357541899441341,
+      "goodput_rps": 1.6075919250270452,
+      "throughput_rps": 1.9235224236620394,
+      "late_frac": 0.33519553072625696,
+      "per_worker": {
+        "w0": 441,
+        "w1": 454
+      },
+      "imbalance": 1.0145251396648045,
+      "decision_ms_p50": 2.439,
+      "decision_ms_p99": 5.171379999999998,
+      "prediction_exact_frac": 0.47374301675977654,
+      "prediction_mae_tokens": 30.60558659217877,
+      "routing_miss_tokens_per_req": 205.6581005586592,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+        "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+        "table scene large old left mood detail light third on dog background in water every with sky below new above looks or or"
+      ]
+    }
+  },
+  {
+    "policy": "session_affinity",
+    "active_convs": 24,
+    "trace_fingerprint": "dce6c061d7ae",
+    "wall_s": 526.2,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 1721584.0,
+      "prefix_queries": 2040406.0
+    },
+    "client_all": {
+      "cached_tokens": 1721584,
+      "prompt_tokens": 2040406,
+      "requests": 990
+    },
+    "summary": {
+      "requests": 895,
+      "ok": 895,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.8552185385140582,
+      "prompt_tokens_mean": 2066.8793296089384,
+      "recomputed_tokens_per_req": 299.24581005586595,
+      "ttft_p50_s": 0.2589988170002471,
+      "ttft_p90_s": 1.0882893431999037,
+      "ttft_p99_s": 2.085919392480027,
+      "ttft_mean_s": 0.43002055488826824,
+      "itl_p50_s": 0.0267,
+      "itl_p99_s": 0.33797549999999976,
+      "e2e_p50_s": 4.123201959999278,
+      "goodput_frac": 0.9731843575418995,
+      "goodput_rps": 1.8727345803824424,
+      "throughput_rps": 1.9243369109555521,
+      "late_frac": 0.20335195530726258,
+      "per_worker": {
+        "w0": 448,
+        "w1": 447
+      },
+      "imbalance": 1.0011173184357542,
+      "decision_ms_p50": 2.397,
+      "decision_ms_p99": 4.953039999999987,
+      "prediction_exact_frac": 0.3396648044692737,
+      "prediction_mae_tokens": 31.195530726256983,
+      "routing_miss_tokens_per_req": 13.300558659217877,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+        "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+        "yellow features picture dark group there mood above blue photo there chair car mood people explain road far contains whi"
+      ]
+    }
+  },
+  {
+    "policy": "cache_aware",
+    "active_convs": 24,
+    "trace_fingerprint": "dce6c061d7ae",
+    "wall_s": 526.5,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 1689856.0,
+      "prefix_queries": 2040406.0
+    },
+    "client_all": {
+      "cached_tokens": 1689856,
+      "prompt_tokens": 2040406,
+      "requests": 990
+    },
+    "summary": {
+      "requests": 895,
+      "ok": 895,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.8424434969838209,
+      "prompt_tokens_mean": 2066.8793296089384,
+      "recomputed_tokens_per_req": 325.65027932960896,
+      "ttft_p50_s": 0.2596206770003846,
+      "ttft_p90_s": 0.9754670501999501,
+      "ttft_p99_s": 2.389654583299669,
+      "ttft_mean_s": 0.4335658401441193,
+      "itl_p50_s": 0.02692,
+      "itl_p99_s": 0.42588199999999954,
+      "e2e_p50_s": 4.2442090569993525,
+      "goodput_frac": 0.9519553072625698,
+      "goodput_rps": 1.8310510740175152,
+      "throughput_rps": 1.9234632761099486,
+      "late_frac": 0.22905027932960895,
+      "per_worker": {
+        "w0": 475,
+        "w1": 420
+      },
+      "imbalance": 1.0614525139664805,
+      "decision_ms_p50": 2.385,
+      "decision_ms_p99": 4.770999999999997,
+      "prediction_exact_frac": 0.3675977653631285,
+      "prediction_mae_tokens": 30.534078212290503,
+      "routing_miss_tokens_per_req": 38.614525139664806,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+        "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+        "the background includes on second features new and few each seems features shadow left table black appears is a is becau"
+      ]
+    }
+  }
+]

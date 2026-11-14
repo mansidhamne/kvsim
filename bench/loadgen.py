@@ -137,7 +137,10 @@ async def _send(session: aiohttp.ClientSession, url: str, body: dict, headers: d
 
 async def run(trace: Trace, pool: ImagePool, targets: list[str], *, pick: str = "round_robin",
               time_scale: float = 1.0, opts: RequestOptions = RequestOptions(),
-              timeout_s: float = 600.0, max_connections: int = 512) -> list[Record]:
+              timeout_s: float = 600.0, max_connections: int = 512,
+              progress=None, progress_every_s: float = 60.0) -> list[Record]:
+    """`progress(line)` is called every `progress_every_s` with a one-line status (requests
+    done / total, errors, TTFT p99 over the last interval), so a long replay never looks hung."""
     picker = TargetPicker(targets, pick, trace.config.seed)
     records: list[Record] = []
     conn = aiohttp.TCPConnector(limit=max_connections)
@@ -159,7 +162,27 @@ async def run(trace: Trace, pool: ImagePool, targets: list[str], *, pick: str = 
                 if rec.error:            # a failed turn ends the conversation
                     return
 
-        await asyncio.gather(*(conversation(c) for c in trace.conversations))
+        total = trace.n_requests()
+        last_end = max((t.at for c in trace.conversations for t in c.turns), default=0.0) / time_scale
+
+        async def heartbeat():
+            seen = 0
+            while True:
+                await asyncio.sleep(progress_every_s)
+                recent = records[seen:]
+                seen = len(records)
+                ttft = sorted(r.ttft_s for r in recent if r.ttft_s is not None)
+                p99 = f"{ttft[min(len(ttft) - 1, int(0.99 * len(ttft)))]:.2f}s" if ttft else "-"
+                el = time.perf_counter() - t_run0
+                progress(f"    {el:5.0f}s / ~{last_end:.0f}s  done {len(records)}/{total}  "
+                         f"errors {sum(1 for r in records if r.error)}  TTFT p99 (last {progress_every_s:.0f}s) {p99}")
+
+        hb = asyncio.create_task(heartbeat()) if progress else None
+        try:
+            await asyncio.gather(*(conversation(c) for c in trace.conversations))
+        finally:
+            if hb:
+                hb.cancel()
     records.sort(key=lambda r: (r.sent_s, r.conv_id, r.turn))
     return records
 

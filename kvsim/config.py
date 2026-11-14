@@ -31,13 +31,28 @@ class CostModel:
     # 0 = linear model. Fitted on a T4 with vLLM (calibration/results/phase2): ~3.2e-7.
     attn_s_per_token_pair: float = 0.0
 
-    def prefill_time(self, weighted_blocks: float, cached_blocks: float = 0.0) -> float:
-        new_tokens = weighted_blocks * self.block_size
-        t = self.fixed_overhead_s + new_tokens / self.prefill_tokens_per_s
+    def prefill_time(self, weighted_blocks: float, cached_blocks: float = 0.0,
+                     new_tokens: float | None = None) -> float:
+        """Linear part on COST-WEIGHTED tokens (image tokens count `image_cost_multiplier` times:
+        the vision encoder), attention part on RAW tokens (attention cost depends on sequence
+        length, not on how expensive a token was to encode). `new_tokens` = raw uncached tokens;
+        if omitted, the weighted count is used (correct only when there are no images)."""
+        weighted_tokens = weighted_blocks * self.block_size
+        t = self.fixed_overhead_s + weighted_tokens / self.prefill_tokens_per_s
         if self.attn_s_per_token_pair:
+            raw = weighted_tokens if new_tokens is None else new_tokens
             cached_tokens = cached_blocks * self.block_size
-            t += self.attn_s_per_token_pair * new_tokens * (cached_tokens + new_tokens / 2)
+            t += self.attn_s_per_token_pair * raw * (cached_tokens + raw / 2)
         return t
+
+    def request_prefill_time(self, req, hit_blocks: int = 0) -> float:
+        """Prefill time of `req` with its first `hit_blocks` cached. Uses the request's raw
+        uncached token count for the attention term when it provides one."""
+        if hasattr(req, "uncached_tokens"):
+            raw = req.uncached_tokens(hit_blocks)
+        else:
+            raw = (len(req.blocks) - hit_blocks) * self.block_size
+        return self.prefill_time(req.uncached_weight(hit_blocks), hit_blocks, new_tokens=raw)
 
     @classmethod
     def from_calibration(cls, path, **overrides) -> "CostModel":

@@ -48,6 +48,9 @@ class _Req:
     def uncached_weight(self, hit_blocks: int) -> float:
         return self.info.uncached_weight(hit_blocks)
 
+    def uncached_tokens(self, hit_blocks: int) -> int:
+        return self.info.uncached_tokens(hit_blocks)
+
 
 class _WorkerAdapter:
     """kvsim.worker.Worker look-alike over live state."""
@@ -79,7 +82,7 @@ class LeastRequests:
         best = min(counts)
         ties = [i for i, c in enumerate(counts) if c == best]
         wid = ties[0] if len(ties) == 1 else int(self.rng.choice(ties))
-        return wid, cost.prefill_time(req.cum_weight[-1])
+        return wid, cost.request_prefill_time(req, 0)
 
 
 @dataclass
@@ -106,14 +109,14 @@ def decide(policy, info: PromptInfo, conv_id: str, loads: Sequence[WorkerLoad],
     workers = [_WorkerAdapter(i, l, index) for i, l in enumerate(loads)]
     req = _Req(info, conv_id)
     wid, est = policy.route(req, workers, now, cost)
-    full = cost.prefill_time(info.uncached_weight(0))
+    full = cost.request_prefill_time(req, 0)
     scores = []
     for w in workers:
         hit = w.match_len(info.blocks, include_pending=True)
         scores.append({"backlog_s": round(w.est_wait(now), 4), "hit_blocks": hit,
-                       "est_prefill_s": round(cost.prefill_time(info.uncached_weight(hit), hit), 4),
+                       "est_prefill_s": round(cost.request_prefill_time(req, hit), 4),
                        "inflight": w.queue_len()})
     hit_chosen = scores[wid]["hit_blocks"]
-    est_chosen = cost.prefill_time(info.uncached_weight(hit_chosen), hit_chosen)
+    est_chosen = cost.request_prefill_time(req, hit_chosen)
     return Decision(wid, est_chosen, full, hit_chosen,
                     index.resident_match(wid, info.blocks), scores)

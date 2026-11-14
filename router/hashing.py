@@ -84,6 +84,11 @@ class PromptInfo:
     tail_weight: float                  # cost-weighted partial last block (never cached)
     n_tokens: int
     n_image_tokens: int
+    block_size: int = 16
+
+    def uncached_tokens(self, hit_blocks: int) -> int:
+        """Raw tokens still to prefill (for the attention term of the cost model)."""
+        return self.n_tokens - hit_blocks * self.block_size
 
     def uncached_weight(self, hit_blocks: int) -> float:
         """Cost-weighted blocks still to prefill if the first `hit_blocks` are cached
@@ -108,4 +113,4 @@ def prompt_info(messages: list[dict], block_size: int = 16, image_cost_multiplie
     k = sum(1 for t in tail if t[0] == "img")
     n_img += k
     tail_w = (len(tail) - k + k * image_cost_multiplier) / block_size
-    return PromptInfo(tuple(blocks), tuple(cum), tail_w, len(toks), n_img)
+    return PromptInfo(tuple(blocks), tuple(cum), tail_w, len(toks), n_img, block_size)

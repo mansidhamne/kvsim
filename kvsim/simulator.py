@@ -95,7 +95,7 @@ def simulate(requests: Sequence[Request], router: Router, cluster: ClusterConfig
         cold_blocks = len(blocks) - rest - evicted_blocks
         seen.update(blocks)
 
-        service = cost.prefill_time(req.uncached_weight(hit), hit)
+        service = cost.request_prefill_time(req, hit)
         w.running = Running(q, now, now + service, service)
         records.append(Record(
             req.rid, w.wid, req.arrival, now, now + service,
@@ -115,7 +115,7 @@ def simulate(requests: Sequence[Request], router: Router, cluster: ClusterConfig
             req = payload
             wid, est = router.route(req, workers, now, cost)
             w = workers[wid]
-            w.enqueue(Queued(req, est, cost.prefill_time(req.cum_weight[-1])))
+            w.enqueue(Queued(req, est, cost.request_prefill_time(req, 0)))
             start_next(w, now)
 
     return SimResult(records, workers)

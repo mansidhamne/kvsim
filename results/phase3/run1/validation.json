@@ -1,0 +1,244 @@
+{
+  "ok": true,
+  "counts": {
+    "PASS": 32,
+    "WARN": 7,
+    "FAIL": 0
+  },
+  "checks": [
+    {
+      "step": "phase3",
+      "name": "12 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['f5c0bd0b5a5b']"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['dce6c061d7ae']"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "476 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 831616 vs client 831616"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "476 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 835792 vs client 835792"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_loaded: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_loaded: no failed requests",
+      "status": "PASS",
+      "detail": "476 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_loaded: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 826336 vs client 826336"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "476 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 952800 vs client 952800"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "476 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 947504 vs client 947504"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "WARN",
+      "detail": "32% within one block; mean error 32 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "895 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 1496352 vs client 1496352"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / round_robin: follow-ups sent on schedule",
+      "status": "WARN",
+      "detail": "36% of turns > 1 s late (system overloaded for this trace)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "895 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 1519392 vs client 1519392"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_requests: follow-ups sent on schedule",
+      "status": "WARN",
+      "detail": "32% of turns > 1 s late (system overloaded for this trace)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_loaded: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_loaded: no failed requests",
+      "status": "PASS",
+      "detail": "895 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_loaded: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 1516128 vs client 1516128"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_loaded: follow-ups sent on schedule",
+      "status": "WARN",
+      "detail": "34% of turns > 1 s late (system overloaded for this trace)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "895 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 1721584 vs client 1721584"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / session_affinity: follow-ups sent on schedule",
+      "status": "WARN",
+      "detail": "20% of turns > 1 s late (system overloaded for this trace)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "895 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 1689856 vs client 1689856"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / cache_aware: follow-ups sent on schedule",
+      "status": "WARN",
+      "detail": "23% of turns > 1 s late (system overloaded for this trace)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "WARN",
+      "detail": "37% within one block; mean error 31 tokens"
+    }
+  ]
+}
