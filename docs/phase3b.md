@@ -60,6 +60,32 @@ python -m deploy.kaggle_run phase3b --workload visionarena --va-paths <local par
     --duration 120 --warmup 20 --session-warmup 30 --time-scale 10 --out results/p3b_mock
 ```
 
+## Block 0: load probe (2026-11-15, 2x T4, VisionArena shards 0-1, round-robin, 1 seed)
+
+Files: `results/phase3b/probe/` (copied with `deploy/sanitize_results.py`: model replies removed).
+
+| conv starts/s | requests | TTFT p50 | TTFT p99 | ITL p99 | goodput | reuse ceiling | round-robin hit |
+|---|---|---|---|---|---|---|---|
+| 0.3 | 69 | 0.35 s | 1.65 s | 0.03 s | 1.00 | 0.28 | 0.22 |
+| 0.6 | 128 | 0.59 s | 2.43 s | 0.06 s | 0.98 | 0.28 | 0.16 |
+| **1.2** | 234 | 0.74 s | **3.04 s** | 0.40 s | **0.93** | 0.21 | 0.11 |
+| 2.4 | 500 | 1.46 s | 8.28 s | 1.57 s | **0.26** | 0.24 | 0.16 |
+
+Chosen loads: **high 1.2, mid 0.8, low 0.4** conversations/s (2.4 is past the knee).
+
+What the full shards showed:
+* images almost never repeat across conversations (0-3 of 48-387 per trace), so reuse on real
+  VLM chats comes from follow-ups within a conversation; ceilings 0.21-0.28;
+* 10-20% of follow-ups fall after the window (real think-time tail) and are dropped;
+* **2 requests failed (HTTP 400): prompts over the 8,192-token limit.** The length filter used
+  words x 1.3, and the router's estimate split text on spaces only, so Chinese/Japanese text
+  (no spaces) was undercounted (router estimate vs engine: median 1.03x, p99 2.2x, worst 42x).
+  Fixed: the filter now counts with the model's own tokenizer on the GPU machine, and the router
+  counts one piece per CJK/kana/hangul/thai character (3-character pieces for other non-ASCII
+  words). Validation correctly marked the probe NOT VALID; its numbers are only used to pick loads.
+* The `EngineDeadError` at the end of the vLLM log is the normal shutdown (SIGTERM) after the
+  run, not a crash.
+
 ## Open points
 
 * `think_scale` 0.1 compresses real think times 10x. Results are reported against the cache size

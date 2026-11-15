@@ -238,7 +238,9 @@ def phase3b_cmd(a: argparse.Namespace) -> int:
     out.mkdir(parents=True, exist_ok=True)
     cost = CostModel.from_calibration(a.cost)
     inputs = _fetch_inputs(a, out)
-    va_over = {"think_scale": a.think_scale, "system_text": a.system_text}
+    va_over = {"think_scale": a.think_scale, "system_text": a.system_text,
+               # exact length filter with the served model's tokenizer (already downloaded by vLLM)
+               "tokenizer": "" if a.external else a.model}
     cfg = Phase3bConfig(
         workload=a.workload, loads=tuple(float(x) for x in a.loads.split(",")),
         seeds=tuple(int(x) for x in a.seeds.split(",")), policies=tuple(a.policies.split(",")),

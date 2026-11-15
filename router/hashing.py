@@ -15,6 +15,7 @@ import base64
 import hashlib
 import io
 import math
+import re
 from dataclasses import dataclass
 from typing import Sequence
 
@@ -30,6 +31,39 @@ def image_size_from_part(part: dict) -> tuple[int, int] | None:
         with Image.open(io.BytesIO(raw)) as im:
             return im.size
     return None
+
+
+# Scripts written without spaces: one piece per character (Qwen's tokenizer uses ~0.7-1.5
+# tokens per CJK character). Found in the 2026-11-15 probe: splitting only on whitespace made a
+# Chinese paragraph count as ONE token, so a few prompts were estimated 2-42x too short.
+_NO_SPACE = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uac00-\ud7af\u0e00-\u0e7f]")
+
+
+def text_pieces(text: str) -> list[str]:
+    """Approximate tokens of `text` without the model's tokenizer: one piece per CJK/kana/
+    hangul/thai character; ASCII words as one piece (long ones such as URLs or code in 4-char
+    chunks); other non-ASCII words (Cyrillic, Vietnamese, ...) in 3-char chunks. Deterministic,
+    so identical text always gives identical pieces (what prefix matching needs)."""
+    out: list[str] = []
+    for word in text.split():
+        buf = ""
+        for ch in word:
+            if _NO_SPACE.match(ch):
+                if buf:
+                    out.extend(_chunks(buf))
+                    buf = ""
+                out.append(ch)
+            else:
+                buf += ch
+        if buf:
+            out.extend(_chunks(buf))
+    return out
+
+
+def _chunks(w: str) -> list[str]:
+    if w.isascii():
+        return [w] if len(w) <= 12 else [w[i:i + 4] for i in range(0, len(w), 4)]
+    return [w[i:i + 3] for i in range(0, len(w), 3)]
 
 
 def image_id(part: dict) -> str:
@@ -53,7 +87,7 @@ def tokenize(messages: list[dict], cfg=None, _img_cache: dict | None = None) -> 
         parts = [{"type": "text", "text": content}] if isinstance(content, str) else (content or [])
         for p in parts:
             if p.get("type") == "text":
-                toks.extend(("w", w) for w in p.get("text", "").split())
+                toks.extend(("w", w) for w in text_pieces(p.get("text", "")))
             elif p.get("type") == "image_url":
                 ident = image_id(p)
                 n = None if _img_cache is None else _img_cache.get(ident)

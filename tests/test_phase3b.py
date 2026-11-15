@@ -154,3 +154,22 @@ def test_validation_flags_fixed_order_and_missing_cache_reset():
     failed = {c["name"].split(": ", 1)[-1] for c in rep["checks"] if c["status"] == "FAIL"}
     assert "policy order rotated across seeds" in failed
     assert "multimodal and encoder caches reset" in failed
+
+
+def test_text_pieces_count_scripts_without_spaces():
+    from router.hashing import text_pieces
+    assert len(text_pieces("describe the picture")) == 3
+    zh = "请详细描述这张图片中的所有内容以及颜色"            # 19 characters, no spaces
+    assert len(text_pieces(zh)) == len(zh)
+    assert len(text_pieces("https://example.com/a/very/long/path")) > 3
+    assert text_pieces("同じ文") == text_pieces("同じ文")        # deterministic
+
+
+def test_visionarena_length_filter_catches_long_cjk_conversations():
+    rows = _va_rows(n=20)
+    long_zh = "图" * 9000                                     # 1 "word" by whitespace, ~9k tokens
+    rows[3]["conversation"] = [[{"role": "user", "content": long_zh}],
+                               [{"role": "assistant", "content": "ok"}]]
+    _, _, stats = va.build_trace(rows, va.VAConfig(conv_rate=0.2, duration_s=40, seed=0))
+    assert stats["dropped"]["too_long"] == 1
+    assert stats["length_filter"].startswith("router estimate")

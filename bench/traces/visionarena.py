@@ -24,11 +24,10 @@ from pathlib import Path
 import numpy as np
 
 from bench.workload import Conversation, ImagePool, ImageRef, Trace, Turn
-from router.hashing import image_tokens
+from router.hashing import image_tokens, text_pieces
 
 from .servegen import ThinkTime
 
-TOKENS_PER_WORD = 1.3      # rough, for sizing only (filters and caps); the engine reports real counts
 
 
 @dataclass(frozen=True)
@@ -42,6 +41,10 @@ class VAConfig:
     reply_cap_tokens: int = 384        # cap on output length per turn (T4 decode time)
     min_reply_tokens: int = 8
     system_text: str = ""              # VisionArena chats have no system prompt
+    # Hugging Face tokenizer used to count text tokens exactly for the length filter (on the GPU
+    # machine the model is already downloaded). "" = router estimate (text_pieces), which
+    # over-counts CJK/Cyrillic text, so it errs on the safe side.
+    tokenizer: str = ""
     # A follow-up whose nominal send time falls more than this many seconds after the trace's
     # last conversation start is dropped (the user "left"): ServeGen's think-time tail reaches
     # hours, which would stretch a run far beyond the measured window. Counted in stats.
@@ -78,6 +81,29 @@ def turns_of(conv_field) -> list[tuple[str, str]]:
     return pairs
 
 
+TEMPLATE_TOKENS_PER_MESSAGE = 6    # chat-template markers per message (Qwen2: ~5)
+
+
+def _load_tokenizer(name: str):
+    from transformers import AutoTokenizer
+    return AutoTokenizer.from_pretrained(name)
+
+
+def _text_tokens(text: str, tok) -> int:
+    if tok is not None:
+        return len(tok.encode(text, add_special_tokens=False))
+    return len(text_pieces(text))
+
+
+def _last_turn_tokens(pairs, size, tok) -> int:
+    """Prompt tokens of the conversation's LAST request (image + every user turn + every earlier
+    reply + template markers) plus that request's output: everything must fit the context."""
+    n = image_tokens(size) + TEMPLATE_TOKENS_PER_MESSAGE * (2 * len(pairs))
+    for k, (u, a) in enumerate(pairs):
+        n += _text_tokens(u, tok) + _text_tokens(a, tok)    # the last reply counts as output
+    return n
+
+
 def _image_size(data: bytes) -> tuple[int, int]:
     import io
     from PIL import Image
@@ -102,6 +128,8 @@ def build_trace(rows: list[dict], cfg: VAConfig, pool: ImagePool | None = None):
     pool = pool or ImagePool()
     think = ThinkTime(cfg.think_scale)
     usable, dropped = [], {"no_image": 0, "no_turns": 0, "too_long": 0}
+    tok = _load_tokenizer(cfg.tokenizer) if cfg.tokenizer else None
+    ratios: list[float] = []
     for r in rows:
         imgs = r.get("images") or []
         pairs = turns_of(r.get("conversation"))
@@ -113,9 +141,11 @@ def build_trace(rows: list[dict], cfg: VAConfig, pool: ImagePool | None = None):
             continue
         data = imgs[0]["bytes"] if isinstance(imgs[0], dict) else imgs[0]
         w, h = _image_size(data)
-        total = image_tokens((w, h)) + sum((len(u.split()) + len(a.split())) * TOKENS_PER_WORD
-                                           for u, a in pairs)
-        if total > cfg.max_context_tokens:
+        est = _last_turn_tokens(pairs, (w, h), None)
+        exact = _last_turn_tokens(pairs, (w, h), tok) if tok is not None else None
+        if exact is not None:
+            ratios.append(est / max(1, exact))
+        if (exact if exact is not None else est) > cfg.max_context_tokens:
             dropped["too_long"] += 1
             continue
         usable.append((data, (w, h), pairs))
@@ -134,8 +164,7 @@ def build_trace(rows: list[dict], cfg: VAConfig, pool: ImagePool | None = None):
         conv = Conversation(cid, None, [ImageRef(-1, w, h, blob=key)])
         t = t0
         for k, (u, a) in enumerate(pairs):
-            n_out = max(cfg.min_reply_tokens,
-                        min(cfg.reply_cap_tokens, math.ceil(len(a.split()) * TOKENS_PER_WORD)))
+            n_out = max(cfg.min_reply_tokens, min(cfg.reply_cap_tokens, _text_tokens(a, tok)))
             th = None
             if k:
                 th = float(think.sample(rng))
@@ -155,6 +184,9 @@ def build_trace(rows: list[dict], cfg: VAConfig, pool: ImagePool | None = None):
         "rows_read": len(rows), "usable": len(usable), "dropped": dropped,
         "conversations": len(convs), "requests": sum(n_turns),
         "follow_ups_after_window_dropped": late_dropped[0],
+        "length_filter": "model tokenizer" if tok is not None else "router estimate (text_pieces)",
+        "router_estimate_over_exact": ({q: round(float(np.percentile(ratios, q)), 3)
+                                        for q in (1, 10, 50, 90, 99)} if ratios else None),
         "single_turn_share": float(np.mean([n == 1 for n in n_turns])) if convs else None,
         "turns_mean": float(np.mean(n_turns)) if convs else None,
         "distinct_images": len(counts),
