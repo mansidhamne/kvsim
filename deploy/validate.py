@@ -356,3 +356,45 @@ def validate_phase3(cells: list[dict], block_size: int = 16) -> dict:
                                 f"mostly-uncached requests with no backlog (should be 0.5-2)"))
     counts = {k: sum(ch.status == k for ch in checks) for k in (PASS, WARN, FAIL)}
     return {"ok": counts[FAIL] == 0, "counts": counts, "checks": [asdict(ch) for ch in checks]}
+
+
+# ------------------------------------------------------------------------------- phase 3b
+
+def validate_phase3b(cells: list[dict], block_size: int = 16) -> dict:
+    """Phase 3 checks per cell, plus: all three caches reset, policy order actually rotated
+    across seeds, preemptions and router retries reported."""
+    checks: list[Check] = []
+    shim = []
+    for c in cells:
+        c2 = dict(c)
+        c2["active_convs"] = f"{c['workload']} cache={c['cache']} load={c['load']:g} seed={c['seed']}"
+        c2["reset_ok"] = [r.get("prefix", False) for r in c.get("resets") or [{}]]
+        shim.append(c2)
+    base = validate_phase3(shim, block_size)
+    checks += [Check(**ch) for ch in base["checks"]]
+    for c in shim:
+        tag = f"{c['active_convs']} / {c['policy']}"
+        res = c.get("resets") or []
+        other = all(r.get("mm") and r.get("encoder") for r in res) if res else False
+        checks.append(Check("phase3b", f"{tag}: multimodal and encoder caches reset",
+                            PASS if other else FAIL, str(res)))
+        pre = (c.get("server") or {}).get("preemptions")
+        if pre:
+            checks.append(Check("phase3b", f"{tag}: no preemptions", WARN,
+                                f"{pre:.0f} requests preempted (KV pool too small for the running "
+                                "requests: latency includes recomputation)"))
+        if c.get("router_retries"):
+            checks.append(Check("phase3b", f"{tag}: router connection retries", WARN,
+                                f"{c['router_retries']} retried (stale keep-alive), none lost"))
+    groups = defaultdict(lambda: defaultdict(set))
+    seeds = defaultdict(set)
+    for c in cells:
+        groups[(c["workload"], c["cache"], c["load"])][c["policy"]].add(c.get("order_index"))
+        seeds[(c["workload"], c["cache"], c["load"])].add(c["seed"])
+    for key, by_pol in groups.items():
+        if len(seeds[key]) >= 2:
+            fixed = [p for p, idx in by_pol.items() if len(idx) < 2]
+            checks.append(Check("phase3b", f"{key[0]} cache={key[1]} load={key[2]:g}: policy order rotated across seeds",
+                                FAIL if fixed else PASS, f"same position every time: {fixed}" if fixed else ""))
+    counts = {k: sum(ch.status == k for ch in checks) for k in (PASS, WARN, FAIL)}
+    return {"ok": counts[FAIL] == 0, "counts": counts, "checks": [asdict(ch) for ch in checks]}

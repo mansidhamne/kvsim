@@ -32,7 +32,11 @@ def summarize_cell(records: list[dict], decisions: list[dict], warmup_s: float,
                    slo_ttft_s: float, slo_itl_s: float, block_size: int = 16,
                    max_tokens: dict | None = None) -> dict:
     """records: loadgen Record dicts; decisions: router log rows; max_tokens: (conv, turn) -> n."""
-    meas = [r for r in records if r["scheduled_s"] >= warmup_s]
+    # Warm-up filter by CONVERSATION start (same conversations measured for every policy; with
+    # think time after the reply, follow-up send times depend on the policy's speed).
+    # (records from runs 1-2 have no conv_start_s; they used send time)
+    meas = [r for r in records
+            if (r["conv_start_s"] if "conv_start_s" in r else r["scheduled_s"]) >= warmup_s]
     ok = [r for r in meas if r.get("error") is None and r.get("ttft_s") is not None]
     ttft = [r["ttft_s"] for r in ok]
     itl_all = [g for r in ok for g in r.get("itl_s") or []]
@@ -165,6 +169,80 @@ def plot_cells(cells: list[dict], out_png: Path, title: str = "") -> None:
             ax.set_title(f"{lab}\n{n} active conversations", fontsize=8)
             for k, v in enumerate(vals):
                 ax.text(k, v, f"{v:.2f}", ha="center", va="bottom", fontsize=6)
+    if title:
+        fig.suptitle(title, fontsize=10)
+    fig.tight_layout()
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_png, dpi=130)
+
+
+# ------------------------------------------------------------------------------- phase 3b
+
+METRICS = ("hit_rate", "ttft_p50_s", "ttft_p99_s", "itl_p99_s", "goodput_frac",
+           "recomputed_tokens_per_req")
+
+
+def aggregate(cells: list[dict]) -> list[dict]:
+    """Per (workload, cache, load, policy): median and min-max over seeds of each metric, and
+    hit rate as a share of the workload's reuse ceiling."""
+    from collections import defaultdict
+    g = defaultdict(list)
+    for c in cells:
+        g[(c["workload"], c["cache"], c["load"], c["policy"])].append(c)
+    out = []
+    for (w, cache, load, pol), cs in sorted(g.items(), key=lambda kv: [str(x) for x in kv[0]]):
+        row = {"workload": w, "cache": cache, "load": load, "policy": pol, "seeds": len(cs)}
+        for m in METRICS:
+            v = [c["summary"].get(m) for c in cs if c["summary"].get(m) is not None]
+            row[m] = {"median": float(np.median(v)), "min": float(min(v)), "max": float(max(v))} if v else None
+        ceil = [c.get("reuse_ceiling") for c in cs if c.get("reuse_ceiling")]
+        hits = [c["summary"].get("hit_rate") for c in cs if c["summary"].get("hit_rate") is not None]
+        if ceil and hits:
+            row["share_of_ceiling"] = float(np.median([h / x for h, x in zip(hits, ceil)]))
+        out.append(row)
+    return out
+
+
+def paired(cells: list[dict], a: str, b: str, metric: str) -> list[dict]:
+    """Relative change of `metric` for policy `a` vs policy `b`, computed WITHIN each seed (same
+    trace, same session), then summarised across seeds: the comparison that cancels run-to-run
+    noise. Negative = a is lower than b."""
+    from collections import defaultdict
+    by = defaultdict(dict)
+    for c in cells:
+        by[(c["workload"], c["cache"], c["load"], c["seed"])][c["policy"]] = c["summary"].get(metric)
+    groups = defaultdict(list)
+    for (w, cache, load, seed), pols in by.items():
+        if pols.get(a) is not None and pols.get(b):
+            groups[(w, cache, load)].append(pols[a] / pols[b] - 1.0)
+    return [{"workload": w, "cache": cache, "load": load, "a": a, "b": b, "metric": metric,
+             "seeds": len(v), "median": float(np.median(v)), "min": float(min(v)), "max": float(max(v)),
+             "same_sign_all_seeds": bool(all(x < 0 for x in v) or all(x > 0 for x in v))}
+            for (w, cache, load), v in sorted(groups.items(), key=lambda kv: [str(x) for x in kv[0]])]
+
+
+def plot_aggregate(rows: list[dict], out_png: Path, title: str = "") -> None:
+    """One row of panels per (workload, cache, load): median over seeds with min-max bars."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    keys = sorted({(r["workload"], r["cache"], r["load"]) for r in rows}, key=lambda k: [str(x) for x in k])
+    metrics = [("hit_rate", "prompt tokens from cache"), ("ttft_p99_s", "TTFT p99 (s)"),
+               ("itl_p99_s", "ITL p99 (s)"), ("goodput_frac", "goodput")]
+    fig, axes = plt.subplots(len(keys), len(metrics), figsize=(3.4 * len(metrics), 2.8 * len(keys)),
+                             squeeze=False)
+    for i, k in enumerate(keys):
+        rs = [r for r in rows if (r["workload"], r["cache"], r["load"]) == k]
+        names = [LABEL.get(r["policy"], r["policy"]) for r in rs]
+        for j, (m, lab) in enumerate(metrics):
+            ax = axes[i][j]
+            med = [(r[m] or {}).get("median", 0) for r in rs]
+            lo = [med[n] - (rs[n][m] or {}).get("min", 0) for n in range(len(rs))]
+            hi = [(rs[n][m] or {}).get("max", 0) - med[n] for n in range(len(rs))]
+            ax.bar(range(len(rs)), med, yerr=[lo, hi], capsize=3,
+                   color=["#2a78d6" if r["policy"] == "cache_aware" else "#9aa5b1" for r in rs])
+            ax.set_xticks(range(len(rs)), names, rotation=35, ha="right", fontsize=7)
+            ax.set_title(f"{lab}\n{k[0]} cache={k[1]} load={k[2]:g} (n={rs[0]['seeds']})", fontsize=7)
     if title:
         fig.suptitle(title, fontsize=10)
     fig.tight_layout()

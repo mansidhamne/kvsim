@@ -42,6 +42,7 @@ class MockConfig:
     decode_tps: float = 40.0              # output tokens per second per sequence
     image_patch: int = 28                 # Qwen2-VL: one token per 28x28 pixels
     time_scale: float = 1.0
+    tokens_per_chunk: int = 1             # >1 emulates vLLM putting several tokens in one chunk
     empty_content: bool = False           # stream "" deltas (what vLLM sends when a token
                                           # decodes to nothing); for loadgen tests
 
@@ -88,6 +89,7 @@ class MockEngine:
         self.prefix_queries = 0
         self.prefix_hits = 0
         self.requests_done = 0
+        self.other_resets = 0
         self.ttft_sum = 0.0          # sums only (no buckets): enough for mean values
         self.itl_sum = 0.0
         self.itl_count = 0
@@ -148,6 +150,7 @@ class MockEngine:
             f"vllm:inter_token_latency_seconds_count{lab} {self.itl_count}",
             "# TYPE vllm:cache_config_info gauge",
             f'vllm:cache_config_info{{block_size="{c.block_size}",num_gpu_blocks="{c.cache_blocks}",worker="{wid}"}} 1.0',
+            "# TYPE vllm:num_preemptions counter", f"vllm:num_preemptions_total{lab} 0",
             "# TYPE kvroute:mock_requests_done counter", f"kvroute:mock_requests_done{lab} {self.requests_done}",
         ]
         return "\n".join(lines) + "\n"
@@ -233,14 +236,29 @@ def make_app(cfg: MockConfig) -> web.Application:
             resp = web.StreamResponse(headers={**headers, "Content-Type": "text/event-stream",
                                                "Cache-Control": "no-cache"})
             await resp.prepare(req)
+            so = body.get("stream_options") or {}
+            continuous = bool(so.get("include_usage") and so.get("continuous_usage_stats"))
+
+            def with_usage(chunk: bytes, done_tokens: int) -> bytes:
+                if not continuous:
+                    return chunk
+                obj = json.loads(chunk[len(b"data: "):])
+                obj["usage"] = {"prompt_tokens": job.n_tokens, "completion_tokens": done_tokens,
+                                "total_tokens": job.n_tokens + done_tokens}
+                return b"data: " + json.dumps(obj).encode() + b"\n\n"
+
             if is_chat:
-                await resp.write(_chunk(rid, {"role": "assistant", "content": ""}))
-            for i in range(n_out):
-                if i:
-                    await asyncio.sleep(gap)
-                await resp.write(_chunk(rid, {"content": "" if cfg.empty_content else reply[i]},
-                                        chat=is_chat))
-            await resp.write(_chunk(rid, {}, "length", chat=is_chat))
+                await resp.write(with_usage(_chunk(rid, {"role": "assistant", "content": ""}), 0))
+            k = max(1, cfg.tokens_per_chunk)
+            done = 0
+            while done < n_out:
+                step = min(k, n_out - done)
+                if done:
+                    await asyncio.sleep(gap * step)   # several tokens arrive together after k steps
+                text = "" if cfg.empty_content else "".join(reply[done:done + step])
+                done += step
+                await resp.write(with_usage(_chunk(rid, {"content": text}, chat=is_chat), done))
+            await resp.write(with_usage(_chunk(rid, {}, "length", chat=is_chat), n_out))
             if (body.get("stream_options") or {}).get("include_usage"):
                 u = {"id": rid, "object": "chat.completion.chunk", "model": "mock",
                      "choices": [], "usage": usage}
@@ -259,7 +277,15 @@ def make_app(cfg: MockConfig) -> web.Application:
         engine.cache = LRUBlockCache(cfg.cache_blocks)
         return web.json_response({"success": True})
 
+    async def reset_other_cache(_req):
+        # vLLM's /reset_mm_cache and /reset_encoder_cache: 200 with no body. The mock has no
+        # multimodal or encoder cache, so these only count calls (tests check they were made).
+        engine.other_resets += 1
+        return web.Response(status=200)
+
     app.router.add_post("/reset_prefix_cache", reset_prefix_cache)
+    app.router.add_post("/reset_mm_cache", reset_other_cache)
+    app.router.add_post("/reset_encoder_cache", reset_other_cache)
     app.router.add_get("/health", health)
     app.router.add_get("/metrics", metrics)
     async def models(_req):

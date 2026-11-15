@@ -60,7 +60,8 @@ def parse_vllm_metrics(text: str) -> dict:
             "vllm:kv_cache_usage_perc": "kv_usage",
             "vllm:prefix_cache_hits": "prefix_hits", "vllm:prefix_cache_hits_total": "prefix_hits",
             "vllm:prefix_cache_queries": "prefix_queries",
-            "vllm:prefix_cache_queries_total": "prefix_queries"}
+            "vllm:prefix_cache_queries_total": "prefix_queries",
+            "vllm:num_preemptions": "preemptions", "vllm:num_preemptions_total": "preemptions"}
     for line in text.splitlines():
         if not line or line.startswith("#"):
             continue

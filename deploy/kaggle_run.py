@@ -189,6 +189,114 @@ def phase3_cmd(a: argparse.Namespace) -> int:
     return 0 if report["ok"] else 2
 
 
+def _fetch_inputs(a: argparse.Namespace, out: Path) -> dict:
+    """Download trace sources on the GPU machine (never committed). VisionArena shards come from
+    Hugging Face (terms: no redistribution), Mooncake from its GitHub release (Apache-2.0)."""
+    got: dict = {}
+    if a.workload == "visionarena" and not a.va_paths:
+        from huggingface_hub import hf_hub_download
+        paths = []
+        for i in [int(x) for x in a.va_shards.split(",")]:
+            fn = f"data/train-{i:05d}-of-00043.parquet"
+            print(f"downloading VisionArena-Chat {fn} (~2 GB)", flush=True)
+            paths.append(hf_hub_download("lmarena-ai/VisionArena-Chat", fn, repo_type="dataset",
+                                         local_dir=str(out.parent / "va_data")))
+        got["va_paths"] = paths
+    elif a.va_paths:
+        got["va_paths"] = a.va_paths.split(",")
+    if a.workload == "mooncake":
+        path = a.mooncake_path or str(out.parent / "mooncake_conversation_trace.jsonl")
+        if not Path(path).exists():
+            import urllib.request
+            url = ("https://raw.githubusercontent.com/kvcache-ai/Mooncake/main/"
+                   "FAST25-release/traces/conversation_trace.jsonl")
+            print(f"downloading {url} (~3 MB)", flush=True)
+            urllib.request.urlretrieve(url, path)
+        got["mooncake_path"] = path
+    return got
+
+
+def _cache_blocks(label: str, live_blocks: int) -> int | None:
+    """'full' -> None (vLLM default); '2000' -> 2000 blocks; 'x0.25' -> 25% of the trace's
+    peak live working set (at least 512 blocks so running requests still fit)."""
+    if label == "full":
+        return None
+    if label.startswith("x"):
+        return max(512, int(float(label[1:]) * live_blocks))
+    return int(label)
+
+
+def phase3b_cmd(a: argparse.Namespace) -> int:
+    from bench.analyze import aggregate, paired, plot_aggregate
+    from bench.traces.stats import workload_stats
+    from bench.workload import RequestOptions
+    from deploy.phase3b import Phase3bConfig, TraceFactory, run_session
+    from deploy.validate import validate_phase3b
+    from kvsim.config import CostModel
+
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    cost = CostModel.from_calibration(a.cost)
+    inputs = _fetch_inputs(a, out)
+    va_over = {"think_scale": a.think_scale, "system_text": a.system_text}
+    cfg = Phase3bConfig(
+        workload=a.workload, loads=tuple(float(x) for x in a.loads.split(",")),
+        seeds=tuple(int(x) for x in a.seeds.split(",")), policies=tuple(a.policies.split(",")),
+        duration_s=a.duration, warmup_s=a.warmup, session_warmup_s=a.session_warmup,
+        time_scale=a.time_scale, slo_ttft_s=a.slo_ttft, slo_itl_s=a.slo_itl,
+        va_paths=tuple(inputs.get("va_paths", ())), va_max_rows=a.va_max_rows, va_overrides=va_over,
+        mooncake_path=inputs.get("mooncake_path", ""),
+        synthetic_overrides={"think_mean_s": 4.0, "pool_size": 16} if a.quick else {})
+    # size the scarce caches from the first trace's live working set
+    tr, pool, _ = TraceFactory(cfg).build(cfg.loads[-1], cfg.seeds[0])
+    ws = workload_stats(tr, pool, cost.block_size)
+    caches = a.caches.split(",")
+    info = env_info()
+    info.update({"phase": "3b", "config": {k: v for k, v in cfg.__dict__.items() if k != "va_paths"},
+                 "va_shards": a.va_shards if a.workload == "visionarena" else None,
+                 "cost_model": cost.__dict__, "first_trace_stats": ws,
+                 "caches": {c: _cache_blocks(c, ws["peak_live_blocks"]) for c in caches}})
+    n_gpus = max(1, a.gpus)
+    per_gpu = max(1, -(-a.workers // n_gpus))
+    save(info, out / "env.json")
+    print(json.dumps({k: info[k] for k in ("nvidia_smi", "vllm", "first_trace_stats", "caches")},
+                     indent=2, default=str))
+    opts = RequestOptions(model="mock" if a.external else "model")
+    cells: list[dict] = []
+    for label in (["external"] if a.external else caches):
+        blocks = None if a.external else _cache_blocks(label, ws["peak_live_blocks"])
+        serve = ServeConfig(model=a.model, gpu_memory_utilization=round(0.9 / per_gpu - 0.02, 2),
+                            max_model_len=a.max_model_len, attention_backend=a.attention_backend,
+                            num_gpu_blocks_override=blocks)
+        ctx = nullcontext(None) if a.external else VllmWorkers(
+            [WorkerSpec(port=8001 + i, gpu=i % n_gpus) for i in range(a.workers)], serve,
+            out / "logs" / f"cache-{label}")
+        print(f"\n=== cache {label}: {blocks or 'vLLM default'} blocks per worker ===", flush=True)
+        with ctx as ws_:
+            urls = a.external.split(",") if a.external else ws_.urls
+            for u in urls:
+                sm = asyncio.run(smoke(u, CalibConfig.quick(), ImagePool()))
+                if "paris" not in (sm.get("sanity_reply") or "").lower() or not sm["ok"]:
+                    save(sm, out / f"smoke_failed_{label}.json")
+                    print(f"worker {u} failed the smoke check: {sm.get('sanity_reply')!r}")
+                    return 1
+            cells += asyncio.run(run_session(urls, cfg, out, cost, label, opts))
+        (out / "cells.json").write_text(json.dumps(cells, indent=2))   # saved after each cache size
+
+    rows = aggregate(cells)
+    pairs = [p for m in ("ttft_p99_s", "goodput_frac", "hit_rate")
+             for a_, b_ in (("cache_aware", "session_affinity"), ("cache_aware", "round_robin"),
+                            ("session_affinity", "round_robin"), ("cache_aware", "least_requests"))
+             for p in paired(cells, a_, b_, m)]
+    save({"aggregate": rows, "paired": pairs}, out / "summary.json")
+    plot_aggregate(rows, out / "phase3b.png", f"{a.workload}: median over seeds, bars = min-max")
+    report = validate_phase3b(cells, cost.block_size)
+    save(report, out / "validation.json")
+    print_report(report)
+    print(f"\nResults in {out}")
+    return 0 if report["ok"] else 2
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -226,7 +334,37 @@ def main() -> None:
     p3.add_argument("--slo-itl", type=float, default=0.1)
     p3.add_argument("--time-scale", type=float, default=1.0, help=">1 compresses the trace (mock only)")
     p3.add_argument("--quick", action="store_true", help="short think times (testing)")
+    p3b = sub.add_parser("phase3b", help="audit-fixed routing experiment on real or synthetic traffic")
+    p3b.add_argument("--out", required=True)
+    p3b.add_argument("--workload", default="visionarena", choices=["synthetic", "visionarena", "mooncake"])
+    p3b.add_argument("--loads", default="0.3", help="synthetic: active convs; visionarena: conv starts/s; "
+                     "mooncake: time dilation")
+    p3b.add_argument("--seeds", default="0,1,2")
+    p3b.add_argument("--policies", default="round_robin,least_requests,session_affinity,cache_aware")
+    p3b.add_argument("--caches", default="full", help="comma list: full | <blocks> | x<fraction of live set>")
+    p3b.add_argument("--external", help="comma-separated running workers (mock) instead of vLLM")
+    p3b.add_argument("--workers", type=int, default=2)
+    p3b.add_argument("--gpus", type=int, default=2)
+    p3b.add_argument("--model", default=ServeConfig.model)
+    p3b.add_argument("--max-model-len", type=int, default=ServeConfig.max_model_len)
+    p3b.add_argument("--attention-backend", default=None)
+    p3b.add_argument("--cost", default="calibration/results/phase2/calibration_vllm_final.json")
+    p3b.add_argument("--va-shards", default="0", help="VisionArena shard indices to download (0-42)")
+    p3b.add_argument("--va-paths", default="", help="local VisionArena parquet files instead")
+    p3b.add_argument("--va-max-rows", type=int, default=5000)
+    p3b.add_argument("--mooncake-path", default="")
+    p3b.add_argument("--think-scale", type=float, default=0.1, help="x ServeGen think times")
+    p3b.add_argument("--system-text", default="", help="system prompt (VisionArena has none)")
+    p3b.add_argument("--duration", type=float, default=300.0)
+    p3b.add_argument("--warmup", type=float, default=60.0)
+    p3b.add_argument("--session-warmup", type=float, default=90.0)
+    p3b.add_argument("--slo-ttft", type=float, default=2.0)
+    p3b.add_argument("--slo-itl", type=float, default=0.1)
+    p3b.add_argument("--time-scale", type=float, default=1.0)
+    p3b.add_argument("--quick", action="store_true")
     a = ap.parse_args()
+    if a.cmd == "phase3b":
+        sys.exit(phase3b_cmd(a))
     if a.cmd == "phase3":
         sys.exit(phase3_cmd(a))
     if a.cmd == "phase2":

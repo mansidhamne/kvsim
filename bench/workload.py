@@ -49,6 +49,9 @@ class TraceConfig:
     board_prob: float = 0.3
     zipf_s: float = 1.1
     pool_size: int = 64                   # number of distinct source images
+    # True: a follow-up is sent think time after the previous reply FINISHES (users read first).
+    # False: legacy, think time counted from the previous send.
+    think_after_reply: bool = True
 
     @property
     def conv_start_rate(self) -> float:
@@ -66,18 +69,24 @@ class ImageRef:
     pool_index: int
     width: int
     height: int
+    blob: str | None = None    # sha256 of the image bytes, for images that come from a dataset
 
     @property
     def uuid(self) -> str:
+        if self.blob:
+            return f"blob-{self.blob[:24]}"       # same bytes -> same uuid -> same cache key
         return f"img-{self.pool_index:05d}-{self.width}x{self.height}"
 
 
 @dataclass
 class Turn:
-    at: float                 # scheduled send time (s from trace start)
+    at: float                 # turn 0: send time (s from trace start). Later turns: nominal only
     user_text: str
     reply_text: str           # canned assistant reply that goes into the NEXT turn's history
     max_tokens: int
+    # Later turns: seconds the user thinks AFTER the previous reply finished. None = legacy mode
+    # (send at `at`, or when the previous reply finished, whichever is later).
+    think_s: float | None = None
 
 
 @dataclass
@@ -90,9 +99,11 @@ class Conversation:
 
 @dataclass
 class Trace:
-    config: TraceConfig
-    system_text: str
+    config: TraceConfig | dict        # TraceConfig for synthetic traces; builder settings otherwise
+    system_text: str                  # "" = no system message
     conversations: list[Conversation]
+    source: str = "synthetic"         # synthetic | visionarena | mooncake
+    meta: dict = field(default_factory=dict)   # provenance: builder settings, filters, counts
 
     def n_requests(self) -> int:
         return sum(len(c.turns) for c in self.conversations)
@@ -105,13 +116,16 @@ class Trace:
     def from_json(cls, s: str) -> "Trace":
         d = json.loads(s)
         cfg = d["config"]
-        cfg["turns"] = tuple(cfg["turns"])
-        for k in ("images_per_conv", "user_words", "reply_words"):
-            cfg[k] = tuple(cfg[k])
-        cfg["image_sizes"] = tuple(tuple(x) for x in cfg["image_sizes"])
+        source = d.get("source", "synthetic")
+        if source == "synthetic":
+            cfg["turns"] = tuple(cfg["turns"])
+            for k in ("images_per_conv", "user_words", "reply_words"):
+                cfg[k] = tuple(cfg[k])
+            cfg["image_sizes"] = tuple(tuple(x) for x in cfg["image_sizes"])
+            cfg = TraceConfig(**cfg)
         convs = [Conversation(c["conv_id"], c["board"], [ImageRef(**i) for i in c["images"]],
                               [Turn(**t) for t in c["turns"]]) for c in d["conversations"]]
-        return cls(TraceConfig(**cfg), d["system_text"], convs)
+        return cls(cfg, d["system_text"], convs, source, d.get("meta", {}))
 
     def save(self, path: str | Path) -> None:
         Path(path).write_text(self.to_json())
@@ -167,11 +181,14 @@ def generate_trace(cfg: TraceConfig) -> Trace:
         conv = Conversation(cid, board, images)
         t = float(t0)
         for k in range(int(rng.integers(cfg.turns[0], cfg.turns[1] + 1))):
+            think = None
             if k:
-                t += cfg.think_min_s + rng.exponential(max(1e-9, cfg.think_mean_s - cfg.think_min_s))
+                think = cfg.think_min_s + rng.exponential(max(1e-9, cfg.think_mean_s - cfg.think_min_s))
+                t += think
             n_user = int(rng.integers(cfg.user_words[0], cfg.user_words[1] + 1))
             n_reply = int(rng.integers(cfg.reply_words[0], cfg.reply_words[1] + 1))
-            conv.turns.append(Turn(round(t, 4), _text(txt, n_user), _text(txt, n_reply), n_reply))
+            conv.turns.append(Turn(round(t, 4), _text(txt, n_user), _text(txt, n_reply), n_reply,
+                                   round(think, 4) if (think is not None and cfg.think_after_reply) else None))
         convs.append(conv)
     return Trace(cfg, system_text, convs)
 
@@ -200,12 +217,25 @@ class ImagePool:
             if not self.files:
                 raise ValueError(f"no images found in {directory}")
         self._cache: dict[tuple[int, int, int], bytes] = {}
+        self.blobs: dict[str, bytes] = {}      # dataset images by sha256 (sent unmodified)
 
     @property
     def synthetic(self) -> bool:
         return not self.files
 
+    def add_blob(self, data: bytes) -> str:
+        """Register dataset image bytes; returns their sha256 (used as ImageRef.blob)."""
+        import hashlib
+        key = hashlib.sha256(data).hexdigest()
+        self.blobs.setdefault(key, data)
+        return key
+
     def jpeg(self, ref: ImageRef) -> bytes:
+        """Image bytes for a reference (dataset images are returned exactly as stored)."""
+        if ref.blob is not None:
+            if ref.blob not in self.blobs:
+                raise KeyError(f"image {ref.blob[:12]} not loaded; build the pool with the trace's loader")
+            return self.blobs[ref.blob]
         key = (ref.pool_index, ref.width, ref.height)
         b = self._cache.get(key)
         if b is None:
@@ -214,7 +244,15 @@ class ImagePool:
         return b
 
     def data_url(self, ref: ImageRef) -> str:
-        return "data:image/jpeg;base64," + base64.b64encode(self.jpeg(ref)).decode()
+        data = self.jpeg(ref)
+        mime = "image/jpeg"
+        if data[:8] == b"\x89PNG\r\n\x1a\n":
+            mime = "image/png"
+        elif data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+            mime = "image/webp"
+        elif data[:3] == b"GIF":
+            mime = "image/gif"
+        return f"data:{mime};base64," + base64.b64encode(data).decode()
 
     def _render(self, ref: ImageRef) -> bytes:
         from PIL import Image, ImageDraw, ImageOps
@@ -256,7 +294,7 @@ def build_messages(trace: Trace, conv: Conversation, turn: int, pool: ImagePool,
         if opts.send_image_uuids:
             part[opts.uuid_field] = ref.uuid
         image_parts.append(part)
-    msgs: list[dict] = [{"role": "system", "content": trace.system_text}]
+    msgs: list[dict] = [{"role": "system", "content": trace.system_text}] if trace.system_text else []
     msgs.append({"role": "user",
                  "content": image_parts + [{"type": "text", "text": conv.turns[0].user_text}]})
     for k in range(1, turn + 1):
@@ -277,7 +315,9 @@ def build_request(trace: Trace, conv: Conversation, turn: int, pool: ImagePool,
         "min_tokens": t.max_tokens,        # vLLM extension: fixed output length per turn
         "temperature": opts.temperature,
         "stream": True,
-        "stream_options": {"include_usage": True},
+        # continuous_usage_stats: every streamed chunk carries completion_tokens so far, letting
+        # the client measure inter-token latency per TOKEN (a chunk can carry >1 token)
+        "stream_options": {"include_usage": True, "continuous_usage_stats": True},
     }
     headers = {"x-kvroute-conv": str(conv.conv_id), "x-kvroute-turn": str(turn)}
     return body, headers

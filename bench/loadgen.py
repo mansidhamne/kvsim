@@ -46,8 +46,10 @@ class Record:
     late_s: float               # sent - scheduled (waiting for the previous turn)
     ttft_s: float | None        # first non-empty content token
     e2e_s: float | None
-    itl_s: list[float] = field(default_factory=list)   # gaps between content chunks
+    itl_s: list[float] = field(default_factory=list)   # inter-token latency, one value PER TOKEN
     output_chunks: int = 0
+    multi_token_chunks: int = 0  # chunks that carried >1 token (their gap is split across them)
+    conv_start_s: float = 0.0    # when this request's conversation started (warm-up filter)
     prompt_tokens: int | None = None
     completion_tokens: int | None = None   # from the server's usage report (exact token count)
     cached_tokens: int | None = None
@@ -87,6 +89,7 @@ async def _send(session: aiohttp.ClientSession, url: str, body: dict, headers: d
     t0 = time.perf_counter()
     rec.sent_s = t0 - t_run0
     last = None
+    tokens_seen = None           # completion tokens reported up to the previous content chunk
     text: list[str] = []
     try:
         async with session.post(url.rstrip("/") + "/v1/chat/completions", json=body,
@@ -105,13 +108,21 @@ async def _send(session: aiohttp.ClientSession, url: str, body: dict, headers: d
                 if data == b"[DONE]":
                     break
                 obj = json.loads(data)
+                chunk_tokens = None
                 if obj.get("usage"):
                     u = obj["usage"]
-                    rec.prompt_tokens = u.get("prompt_tokens")
-                    rec.completion_tokens = u.get("completion_tokens")
+                    # with continuous_usage_stats every chunk carries usage; later chunks may omit
+                    # prompt details, so only overwrite fields that are present
+                    if u.get("prompt_tokens") is not None:
+                        rec.prompt_tokens = u["prompt_tokens"]
+                    if u.get("completion_tokens") is not None:
+                        chunk_tokens = u["completion_tokens"]
+                        rec.completion_tokens = chunk_tokens
                     det = u.get("prompt_tokens_details") or {}
-                    rec.cached_tokens = det.get("cached_tokens")
-                    rec.mm_tokens = det.get("multimodal_tokens")
+                    if det.get("cached_tokens") is not None:
+                        rec.cached_tokens = det["cached_tokens"]
+                    if det.get("multimodal_tokens") is not None:
+                        rec.mm_tokens = det["multimodal_tokens"]
                 for ch in obj.get("choices") or []:
                     content = (ch.get("delta") or {}).get("content")
                     now = time.perf_counter()
@@ -119,8 +130,18 @@ async def _send(session: aiohttp.ClientSession, url: str, body: dict, headers: d
                         if last is None:
                             rec.ttft_s = now - t0
                         else:
-                            rec.itl_s.append(round(now - last, 5))
+                            # tokens this chunk advanced (per-chunk usage), so a chunk carrying k
+                            # tokens contributes k gaps of (gap / k), not one long gap
+                            k = 1
+                            if chunk_tokens is not None and tokens_seen is not None:
+                                k = max(1, chunk_tokens - tokens_seen)
+                            if k > 1:
+                                rec.multi_token_chunks += 1
+                            g = (now - last) / k
+                            rec.itl_s.extend([round(g, 5)] * k)
                         last = now
+                        if chunk_tokens is not None:
+                            tokens_seen = chunk_tokens
                         rec.output_chunks += 1
                         if len(text) < 300:
                             text.append(content)
@@ -141,24 +162,33 @@ async def run(trace: Trace, pool: ImagePool, targets: list[str], *, pick: str = 
               progress=None, progress_every_s: float = 60.0) -> list[Record]:
     """`progress(line)` is called every `progress_every_s` with a one-line status (requests
     done / total, errors, TTFT p99 over the last interval), so a long replay never looks hung."""
-    picker = TargetPicker(targets, pick, trace.config.seed)
+    seed = trace.config.get("seed", 0) if isinstance(trace.config, dict) else trace.config.seed
+    picker = TargetPicker(targets, pick, seed)
     records: list[Record] = []
     conn = aiohttp.TCPConnector(limit=max_connections)
     async with aiohttp.ClientSession(connector=conn) as session:
         t_run0 = time.perf_counter()
 
         async def conversation(conv) -> None:
+            conv_start = conv.turns[0].at / time_scale
+            prev_end = None
             for k, turn in enumerate(conv.turns):
-                sched = turn.at / time_scale
+                if k and turn.think_s is not None and prev_end is not None:
+                    # the user reads the reply, then thinks: send think_s after it finished
+                    sched = prev_end + turn.think_s / time_scale
+                else:
+                    sched = turn.at / time_scale
                 delay = sched - (time.perf_counter() - t_run0)
                 if delay > 0:
                     await asyncio.sleep(delay)
                 body, headers = build_request(trace, conv, k, pool, opts)
                 target = picker.pick(conv.conv_id)
                 rec = Record(conv.conv_id, k, target, None, round(sched, 4), 0.0, 0.0, None, None)
+                rec.conv_start_s = round(conv_start, 4)
                 await _send(session, target, body, headers, rec, t_run0, timeout_s)
                 rec.late_s = max(0.0, rec.sent_s - sched)
                 records.append(rec)
+                prev_end = rec.sent_s + (rec.e2e_s or 0.0)
                 if rec.error:            # a failed turn ends the conversation
                     return
 
