@@ -82,7 +82,11 @@ def tokenize(messages: list[dict], cfg=None, _img_cache: dict | None = None) -> 
     patch = getattr(cfg, "image_patch", IMAGE_PATCH)
     toks: list = []
     for m in messages:
-        toks.append(("role", m.get("role", "")))
+        role = m.get("role", "")
+        # An assistant turn in the history starts with the same marker the engine put after the
+        # prompt when it generated that reply, so "prompt + generated reply" (what the engine
+        # cached while decoding) is a prefix of the next turn's prompt, as in a chat template.
+        toks.append(("role", "assistant-start" if role == "assistant" else role))
         content = m.get("content", "")
         parts = [{"type": "text", "text": content}] if isinstance(content, str) else (content or [])
         for p in parts:
@@ -148,3 +152,13 @@ def prompt_info(messages: list[dict], block_size: int = 16, image_cost_multiplie
     n_img += k
     tail_w = (len(tail) - k + k * image_cost_multiplier) / block_size
     return PromptInfo(tuple(blocks), tuple(cum), tail_w, len(toks), n_img, block_size)
+
+
+def blocks_with_reply(messages: list[dict], reply_text: str, block_size: int = 16,
+                      img_cache: dict | None = None, patch: int = IMAGE_PATCH) -> list[int]:
+    """Block hashes of a prompt followed by its generated reply: what an engine with prefix
+    caching holds after decoding (generated tokens fill blocks too)."""
+    class _C:
+        image_patch = patch
+    toks = tokenize(messages, _C, img_cache) + [("w", w) for w in text_pieces(reply_text)]
+    return block_hashes(toks, block_size)

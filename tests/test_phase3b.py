@@ -173,3 +173,49 @@ def test_visionarena_length_filter_catches_long_cjk_conversations():
     _, _, stats = va.build_trace(rows, va.VAConfig(conv_rate=0.2, duration_s=40, seed=0))
     assert stats["dropped"]["too_long"] == 1
     assert stats["length_filter"].startswith("router estimate")
+
+
+def _multi_turn_trace():
+    return generate_trace(TraceConfig(seed=4, active_convs=3, duration_s=15, think_mean_s=1.5,
+                                      think_min_s=1, turns=(3, 3), pool_size=3, images_per_conv=(1, 1),
+                                      system_words=20, user_words=(4, 6), reply_words=(30, 40)))
+
+
+def _follow_up_reuse(history: str):
+    from bench.workload import RequestOptions
+    from router.server import RouterConfig, RouterRunner
+    from kvsim.config import CostModel
+    tr = _multi_turn_trace()
+
+    async def go():
+        async with MockCluster(2, MockConfig(time_scale=10)) as cl:
+            async with RouterRunner(RouterConfig(cl.urls, policy="session_affinity",
+                                                 cost=CostModel(block_size=16))) as rr:
+                recs = await replay(tr, ImagePool(), [rr.url], time_scale=10,
+                                    opts=RequestOptions(history=history))
+                return recs, list(rr.router.log_rows)
+
+    recs, log = asyncio.run(go())
+    by = {(r.conv_id, r.turn): r for r in recs}
+    fu = [(r, by[(r.conv_id, r.turn - 1)]) for r in recs if r.turn > 0]
+    beyond_prev_prompt = [r.cached_tokens > p.prompt_tokens + 16 for r, p in fu]
+    return recs, log, beyond_prev_prompt
+
+
+def test_own_history_lets_follow_ups_reuse_the_generated_reply():
+    _, _, canned = _follow_up_reuse("canned")
+    recs, log, own = _follow_up_reuse("own")
+    assert not any(canned)               # canned replies: cache stops at the previous prompt
+    assert all(own)                      # own replies: the reply's blocks are reused as well
+    assert all(r.error is None and r.reply_sha for r in recs)
+    # the router's index includes the reply blocks too, so its predictions stay accurate
+    fu = [d for d in log if d.get("turn") not in (None, "0")]
+    assert all(abs(d["predicted_resident_tokens"] - d["actual_cached_tokens"]) <= 32 for d in fu)
+
+
+def test_validation_reports_reply_divergence():
+    a = _cell("round_robin", 0, 3.0, 0.3, 0, history="own", reply_shas={"0:0": "x", "0:1": "y"})
+    b = _cell("cache_aware", 0, 2.0, 0.4, 1, history="own", reply_shas={"0:0": "x", "0:1": "z"})
+    rep = validate_phase3b([a, b])
+    (c,) = [c for c in rep["checks"] if "replies identical" in c["name"]]
+    assert c["status"] == "WARN" and "50.0%" in c["detail"]

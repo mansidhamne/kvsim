@@ -282,12 +282,20 @@ class RequestOptions:
     send_image_uuids: bool = True   # attach a stable per-image uuid (see docs/vllm_api.md)
     uuid_field: str = "uuid"        # field name on the image content part [verify in Phase 2]
     temperature: float = 0.0
+    # Assistant turns in the history:
+    #   "canned": the trace's reply_text (identical prompts for every policy, but the reply part
+    #             of a follow-up can never hit the cache: the engine cached a different reply)
+    #   "own":    the reply the model actually generated for the previous turn, as a real chat app
+    #             sends it (its KV was cached during decoding, so follow-ups can reuse it)
+    history: str = "canned"
 
 
 def build_messages(trace: Trace, conv: Conversation, turn: int, pool: ImagePool,
-                   opts: RequestOptions = RequestOptions()) -> list[dict]:
+                   opts: RequestOptions = RequestOptions(),
+                   replies: list[str] | None = None) -> list[dict]:
     """Chat history for `turn` (0-based): system, then the image collection + first question,
-    then alternating canned replies and later questions."""
+    then alternating replies and later questions. `replies[k]` (the model's generated reply to
+    turn k) replaces the trace's canned reply when given."""
     image_parts = []
     for ref in conv.images:
         part = {"type": "image_url", "image_url": {"url": pool.data_url(ref)}}
@@ -298,19 +306,21 @@ def build_messages(trace: Trace, conv: Conversation, turn: int, pool: ImagePool,
     msgs.append({"role": "user",
                  "content": image_parts + [{"type": "text", "text": conv.turns[0].user_text}]})
     for k in range(1, turn + 1):
-        msgs.append({"role": "assistant", "content": conv.turns[k - 1].reply_text})
+        reply = replies[k - 1] if replies is not None and k - 1 < len(replies) else conv.turns[k - 1].reply_text
+        msgs.append({"role": "assistant", "content": reply})
         msgs.append({"role": "user", "content": conv.turns[k].user_text})
     return msgs
 
 
 def build_request(trace: Trace, conv: Conversation, turn: int, pool: ImagePool,
-                  opts: RequestOptions = RequestOptions()) -> tuple[dict, dict]:
+                  opts: RequestOptions = RequestOptions(),
+                  replies: list[str] | None = None) -> tuple[dict, dict]:
     """-> (JSON body, HTTP headers). Headers carry the conversation id for routers that need a
     session key (session affinity); the engine ignores them."""
     t = conv.turns[turn]
     body = {
         "model": opts.model,
-        "messages": build_messages(trace, conv, turn, pool, opts),
+        "messages": build_messages(trace, conv, turn, pool, opts, replies),
         "max_tokens": t.max_tokens,
         "min_tokens": t.max_tokens,        # vLLM extension: fixed output length per turn
         "temperature": opts.temperature,

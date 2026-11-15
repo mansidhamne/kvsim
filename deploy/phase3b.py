@@ -62,6 +62,7 @@ class Phase3bConfig:
     mooncake_path: str = ""
     mooncake_overrides: dict = field(default_factory=dict)
     synthetic_overrides: dict = field(default_factory=dict)
+    history: str = "own"                       # "own" replies in follow-ups (see RequestOptions)
 
 
 class TraceFactory:
@@ -157,7 +158,10 @@ async def run_cell(urls, policy, trace, pool, cost: CostModel, cfg: Phase3bConfi
     cell = {
         "policy": policy, **labels, "trace_fingerprint": fingerprint(trace),
         "wall_s": round(wall, 1), "resets": resets, "router_capacity_blocks": capacity,
-        "router_retries": retries,
+        "router_retries": retries, "history": opts.history,
+        # per request: hash of the generated reply. With history="own" a follow-up's prompt
+        # contains the previous reply, so policies see identical prompts only while replies match
+        "reply_shas": {f"{r['conv_id']}:{r['turn']}": r.get("reply_sha") for r in ok},
         "server": {k: _delta(before, after, k) for k in ("prefix_hits", "prefix_queries", "preemptions")},
         "client_all": {"cached_tokens": sum(r.get("cached_tokens") or 0 for r in ok),
                        "prompt_tokens": sum(r.get("prompt_tokens") or 0 for r in ok),

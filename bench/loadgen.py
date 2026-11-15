@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import hashlib
 import json
 import random
 import time
@@ -55,6 +56,7 @@ class Record:
     cached_tokens: int | None = None
     mm_tokens: dict | None = None     # prompt_tokens_details.multimodal_tokens, e.g. {"image": 512}
     output_text: str = ""        # first ~300 chars of the reply (sanity check, e.g. fp16 garbage)
+    reply_sha: str | None = None # hash of the full reply: are replies identical across policies?
     status: int | None = None
     error: str | None = None
 
@@ -85,7 +87,8 @@ class TargetPicker:
 
 
 async def _send(session: aiohttp.ClientSession, url: str, body: dict, headers: dict,
-                rec: Record, t_run0: float, timeout_s: float) -> None:
+                rec: Record, t_run0: float, timeout_s: float) -> str:
+    """Streams one request into `rec`; returns the full reply text ("" on error)."""
     t0 = time.perf_counter()
     rec.sent_s = t0 - t_run0
     last = None
@@ -143,17 +146,20 @@ async def _send(session: aiohttp.ClientSession, url: str, body: dict, headers: d
                         if chunk_tokens is not None:
                             tokens_seen = chunk_tokens
                         rec.output_chunks += 1
-                        if len(text) < 300:
-                            text.append(content)
+                        text.append(content)
                     elif ch.get("finish_reason") and rec.ttft_s is None:
                         # A token was generated but decoded to "" (e.g. a partial UTF-8 byte or
                         # a special token, common with max_tokens=1): the finish chunk is the
                         # first sign of it.
                         rec.ttft_s = now - t0
-        rec.output_text = "".join(text)[:300]
+        full = "".join(text)
+        rec.output_text = full[:300]
+        rec.reply_sha = hashlib.sha256(full.encode()).hexdigest()[:16]
         rec.e2e_s = time.perf_counter() - t0
+        return full
     except Exception as e:  # noqa: BLE001 - every failure is recorded, never raised
         rec.error = f"{type(e).__name__}: {e}"[:500]
+    return ""
 
 
 async def run(trace: Trace, pool: ImagePool, targets: list[str], *, pick: str = "round_robin",
@@ -172,6 +178,7 @@ async def run(trace: Trace, pool: ImagePool, targets: list[str], *, pick: str = 
         async def conversation(conv) -> None:
             conv_start = conv.turns[0].at / time_scale
             prev_end = None
+            replies: list[str] = []      # the model's own replies, for opts.history == "own"
             for k, turn in enumerate(conv.turns):
                 if k and turn.think_s is not None and prev_end is not None:
                     # the user reads the reply, then thinks: send think_s after it finished
@@ -181,11 +188,12 @@ async def run(trace: Trace, pool: ImagePool, targets: list[str], *, pick: str = 
                 delay = sched - (time.perf_counter() - t_run0)
                 if delay > 0:
                     await asyncio.sleep(delay)
-                body, headers = build_request(trace, conv, k, pool, opts)
+                body, headers = build_request(trace, conv, k, pool, opts,
+                                              replies if opts.history == "own" else None)
                 target = picker.pick(conv.conv_id)
                 rec = Record(conv.conv_id, k, target, None, round(sched, 4), 0.0, 0.0, None, None)
                 rec.conv_start_s = round(conv_start, 4)
-                await _send(session, target, body, headers, rec, t_run0, timeout_s)
+                replies.append(await _send(session, target, body, headers, rec, t_run0, timeout_s))
                 rec.late_s = max(0.0, rec.sent_s - sched)
                 records.append(rec)
                 prev_end = rec.sent_s + (rec.e2e_s or 0.0)

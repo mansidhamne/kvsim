@@ -36,7 +36,7 @@ from aiohttp import web
 
 from kvsim.config import CostModel
 
-from .hashing import prompt_info
+from .hashing import blocks_with_reply, prompt_info
 from .index.shadow import ShadowIndex
 from .load import InFlight, WorkerLoad, parse_vllm_metrics
 from .policies import decide, make_policy
@@ -131,6 +131,8 @@ class Router:
         headers = {"x-kvroute-worker": load.name, "x-kvroute-decision-ms": f"{decision_s * 1e3:.3f}"}
         resp: web.StreamResponse | None = None
         prefilled = False
+        completed = False
+        reply: list[str] = []
 
         def mark_prefilled():
             nonlocal prefilled
@@ -163,10 +165,11 @@ class Router:
                     buf += chunk
                     while b"\n" in buf:
                         line, buf = buf.split(b"\n", 1)
-                        self._inspect_line(line.strip(), row, mark_prefilled)
+                        self._inspect_line(line.strip(), row, mark_prefilled, reply)
                 if buf.strip():
-                    self._inspect_line(buf.strip(), row, mark_prefilled)
+                    self._inspect_line(buf.strip(), row, mark_prefilled, reply)
                 await resp.write_eof()
+                completed = True
                 return resp
         except Exception as e:  # noqa: BLE001
             self.counters["errors"] += 1
@@ -177,6 +180,11 @@ class Router:
         finally:
             if not prefilled:
                 self.index.on_dropped(d.wid, info.blocks)
+            elif completed and reply and "messages" in body:
+                # the engine also cached the generated reply; a follow-up that sends it back in
+                # its history will hit it, so the router's view includes it too
+                self.index.on_extended(d.wid, blocks_with_reply(
+                    body["messages"], "".join(reply), self.cost.block_size, self._img_cache))
             load.inflight.pop(rid, None)
             row["router_e2e_s"] = round(time.perf_counter() - t0, 4)
             self.log_rows.append(row)
@@ -202,7 +210,7 @@ class Router:
                 await asyncio.sleep(0.05 * (attempt + 1))
         raise RuntimeError("unreachable")
 
-    def _inspect_line(self, line: bytes, row: dict, mark_prefilled) -> None:
+    def _inspect_line(self, line: bytes, row: dict, mark_prefilled, reply: list | None = None) -> None:
         if not line.startswith(b"data:"):
             return
         data = line[5:].strip()
@@ -214,7 +222,10 @@ class Router:
             return
         for ch in obj.get("choices") or []:
             # chat: delta.content; completions: text
-            if (ch.get("delta") or {}).get("content") or ch.get("text") or ch.get("finish_reason"):
+            content = (ch.get("delta") or {}).get("content") or ch.get("text")
+            if content and reply is not None:
+                reply.append(content)
+            if content or ch.get("finish_reason"):
                 mark_prefilled()
         if obj.get("usage"):
             self._record_usage(row, obj["usage"])

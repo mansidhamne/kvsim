@@ -386,6 +386,23 @@ def validate_phase3b(cells: list[dict], block_size: int = 16) -> dict:
         if c.get("router_retries"):
             checks.append(Check("phase3b", f"{tag}: router connection retries", WARN,
                                 f"{c['router_retries']} retried (stale keep-alive), none lost"))
+    # With the model's own replies in the history, a follow-up's prompt is identical across
+    # policies only if every earlier reply was identical (greedy decoding, but GPU batching is not
+    # bit-exact). Report how many requests had identical replies in every policy.
+    by_seed = defaultdict(list)
+    for c in cells:
+        if c.get("history") == "own" and c.get("reply_shas"):
+            by_seed[(c["workload"], c["cache"], c["load"], c["seed"])].append(c)
+    for key, cs in by_seed.items():
+        if len(cs) < 2:
+            continue
+        keys = set.intersection(*(set(c["reply_shas"]) for c in cs))
+        same = sum(1 for k in keys if len({c["reply_shas"][k] for c in cs}) == 1)
+        share = same / len(keys) if keys else 0.0
+        checks.append(Check("phase3b", f"{key[0]} cache={key[1]} load={key[2]:g} seed={key[3]}: "
+                            "replies identical across policies", PASS if share >= 0.9 else WARN,
+                            f"{share:.1%} of {len(keys)} requests (own-reply history: differing "
+                            "replies make later prompts differ)"))
     groups = defaultdict(lambda: defaultdict(set))
     seeds = defaultdict(set)
     for c in cells:

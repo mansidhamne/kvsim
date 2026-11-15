@@ -46,6 +46,10 @@ class ShadowIndex:
         self.caches[w].insert(list(blocks))
         self._unpend(w, blocks)
 
+    def on_extended(self, w: int, blocks: Sequence[int]) -> None:
+        """Generated tokens became cached after decoding (prompt + reply blocks)."""
+        self.caches[w].insert(list(blocks))
+
     def on_dropped(self, w: int, blocks: Sequence[int]) -> None:
         """Request failed before its prefill finished."""
         self._unpend(w, blocks)

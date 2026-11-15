@@ -52,7 +52,7 @@ class MockConfig:
 
 # Tokenization and block hashing are shared with the router (router/hashing.py), so on the
 # mock the router's shadow index sees exactly what the "engine" caches.
-from router.hashing import block_hashes, tokenize  # noqa: E402,F401
+from router.hashing import block_hashes, blocks_with_reply, tokenize  # noqa: E402,F401
 
 
 def messages_of(body: dict) -> list[dict]:
@@ -269,6 +269,10 @@ def make_app(cfg: MockConfig) -> web.Application:
         finally:
             engine.decoding -= 1
             engine.requests_done += 1
+            # like vLLM: generated tokens fill KV blocks that are cached too, so a follow-up that
+            # sends this reply back in its history can reuse it
+            engine.cache.insert(blocks_with_reply(messages, "".join(reply), cfg.block_size,
+                                                  engine._img_tokens, cfg.image_patch))
 
     async def reset_prefix_cache(_req):
         # like vLLM's dev endpoint: refuses while requests are running

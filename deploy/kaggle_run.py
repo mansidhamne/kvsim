@@ -248,7 +248,8 @@ def phase3b_cmd(a: argparse.Namespace) -> int:
         time_scale=a.time_scale, slo_ttft_s=a.slo_ttft, slo_itl_s=a.slo_itl,
         va_paths=tuple(inputs.get("va_paths", ())), va_max_rows=a.va_max_rows, va_overrides=va_over,
         mooncake_path=inputs.get("mooncake_path", ""),
-        synthetic_overrides={"think_mean_s": 4.0, "pool_size": 16} if a.quick else {})
+        synthetic_overrides={"think_mean_s": 4.0, "pool_size": 16} if a.quick else {},
+        history=a.history)
     # size the scarce caches from the first trace's live working set
     tr, pool, _ = TraceFactory(cfg).build(cfg.loads[-1], cfg.seeds[0])
     ws = workload_stats(tr, pool, cost.block_size)
@@ -263,7 +264,7 @@ def phase3b_cmd(a: argparse.Namespace) -> int:
     save(info, out / "env.json")
     print(json.dumps({k: info[k] for k in ("nvidia_smi", "vllm", "first_trace_stats", "caches")},
                      indent=2, default=str))
-    opts = RequestOptions(model="mock" if a.external else "model")
+    opts = RequestOptions(model="mock" if a.external else "model", history=a.history)
     cells: list[dict] = []
     for label in (["external"] if a.external else caches):
         blocks = None if a.external else _cache_blocks(label, ws["peak_live_blocks"])
@@ -363,6 +364,9 @@ def main() -> None:
     p3b.add_argument("--slo-ttft", type=float, default=2.0)
     p3b.add_argument("--slo-itl", type=float, default=0.1)
     p3b.add_argument("--time-scale", type=float, default=1.0)
+    p3b.add_argument("--history", default="own", choices=["own", "canned"],
+                     help="assistant turns in follow-ups: the model's own replies (real chat) or the "
+                          "trace's canned replies (identical prompts, but replies never hit the cache)")
     p3b.add_argument("--quick", action="store_true")
     a = ap.parse_args()
     if a.cmd == "phase3b":
