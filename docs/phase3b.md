@@ -86,6 +86,73 @@ What the full shards showed:
 * The `EngineDeadError` at the end of the vLLM log is the normal shutdown (SIGTERM) after the
   run, not a crash.
 
+## Block A (2026-11-15): VALID, 134 pass / 0 warn / 0 fail
+
+VisionArena, 1.2 conversation starts/s, 2x T4, full cache (12,636 blocks/GPU) and 25% (4,094),
+3 seeds with rotated policy order. Files: `results/phase3b/A/` (sanitized). 0 errors, 0
+preemptions, 0 retries, all caches reset before every cell, length filter with the model's tokenizer.
+
+Median over seeds [min, max]:
+
+| cache | policy | hit | TTFT p50 | TTFT p99 | goodput |
+|---|---|---|---|---|---|
+| full | round_robin | 0.15 [0.15, 0.17] | 0.79 s | 4.42 s [2.73, 6.34] | 0.93 [0.85, 0.95] |
+| full | least_requests | 0.16 [0.14, 0.19] | 0.82 s | 3.33 s [3.04, 5.83] | 0.91 [0.84, 0.92] |
+| full | session_affinity | 0.24 [0.22, 0.29] | 0.66 s | 2.28 s [2.07, 4.55] | 0.98 [0.88, 0.98] |
+| full | cache_aware | 0.22 [0.22, 0.29] | 0.66 s | 2.13 s [2.07, 5.67] | 0.98 [0.90, 0.99] |
+| 25% | round_robin | 0.12 [0.10, 0.16] | 0.77 s | 4.45 s [4.16, 7.46] | 0.91 [0.83, 0.92] |
+| 25% | least_requests | 0.12 [0.12, 0.16] | 0.89 s | 4.65 s [3.21, 4.89] | 0.83 [0.82, 0.92] |
+| 25% | session_affinity | 0.22 [0.20, 0.27] | 0.68 s | 2.07 s [2.07, 5.56] | 0.98 [0.88, 0.98] |
+| 25% | cache_aware | 0.21 [0.19, 0.26] | 0.68 s | 2.68 s [2.32, 5.90] | 0.95 [0.86, 0.97] |
+
+Paired within each seed (same trace, same session), median [min, max] over 3 seeds:
+
+| comparison | full cache | 25% cache |
+|---|---|---|
+| session affinity vs round-robin, TTFT p99 | **-28%** [-53, -16], all seeds | **-50%** [-53, -26], all seeds |
+| session affinity vs round-robin, goodput | +4.2% [+3.2, +6.1], all seeds | +6.2% [+5.4, +8.3], all seeds |
+| session affinity vs least-requests, TTFT p50 | -25% [-26, -19], all seeds | -24% [-25, -24], all seeds |
+| cache-aware vs round-robin, TTFT p99 | -22% [-53, -11], all seeds | -40% [-44, -21], all seeds |
+| **cache-aware vs session affinity**, TTFT p99 | +0.2% [-7, +25], mixed | **+12% [+6, +29], worse in all seeds** |
+| cache-aware vs session affinity, goodput | +0.5% [-0.2, +1.8], mixed | -2.2% [-3.1, -0.8], worse in all seeds |
+
+What the data says (and what it rules out):
+
+* **Keeping a conversation on its GPU is what helps**: session affinity and cache-aware reuse
+  ~50-80% more prompt tokens than the cache-blind balancers and cut TTFT p99 by 22-50% in every
+  seed. Both reach ~100% of the trace's estimated reuse ceiling with the full cache (the ceiling
+  is estimated with the router's token counts, so it is approximate).
+* **Cache-aware routing adds nothing over session affinity on real VLM chats, and is slightly
+  worse when the cache is smaller.** Images almost never repeat across conversations (1-5 per
+  trace of ~400-470), so there is no cross-conversation reuse to exploit; cache-aware only differs
+  by occasionally moving a conversation (8-9% of follow-ups). Every move lost the cache (0 tokens
+  reused after the move). The router moved because the conversation's GPU looked ~0.4-0.6 s busier;
+  its TTFT predictions are ~25% too low (median predicted/measured 0.75, correlation 0.70-0.75)
+  because the cost model counts prefill work but not the 7-8 requests decoding on each GPU.
+* **The 25% cache was only mildly scarce.** Real per-GPU demand (prompts of conversations waiting
+  for their next turn + running requests) peaked at 23-52k tokens, median 10-16k; the 25% cap was
+  65k. Evictions came from cache turnover (single-turn prompts fill it), not from the peak: follow-ups
+  that stayed on their GPU reused 0.70 of their prompt with the full cache, 0.63 with 25%.
+* **Reuse is understated for all policies by the canned history.** The history holds the dataset's
+  original reply, not the reply our model generated (and vLLM cached), so the reply part of every
+  follow-up is recomputed: cached tokens equal the previous prompt in 99% of follow-ups. With the
+  model's own replies, follow-ups would reuse ~0.88 of their prompt instead of 0.70.
+* Noise: seed 2 has a burst of conversation starts around 240-300 s that pushes every policy's
+  TTFT p99 to 4.5-7.5 s; paired comparisons cancel it.
+
+## Change after Block A: follow-ups carry the model's own replies (default from Block B on)
+
+`--history own` (new default): each follow-up's history holds the reply the model actually
+generated for the previous turn, as a chat app sends it. vLLM caches generated tokens while
+decoding, so the reply part of a follow-up can now hit the cache (Block A, with the dataset's
+replies, could only reuse the previous prompt: 99% of follow-ups stopped exactly there). The router
+indexes prompt + generated reply when a request finishes, so its predictions include it.
+
+Cost: prompts are identical across policies only while the generated replies are (greedy decoding,
+but GPU batching isn't bit-exact). Every request's reply hash is stored per cell, and validation
+reports the share of requests whose replies were identical in all policies (WARN below 90%).
+Block A stays as the `--history canned` baseline.
+
 ## Open points
 
 * `think_scale` 0.1 compresses real think times 10x. Results are reported against the cache size

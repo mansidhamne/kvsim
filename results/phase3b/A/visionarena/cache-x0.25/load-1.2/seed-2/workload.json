@@ -1,0 +1,35 @@
+{
+  "build": {
+    "rows_read": 9000,
+    "usable": 8902,
+    "dropped": {
+      "no_image": 0,
+      "no_turns": 0,
+      "too_long": 98
+    },
+    "conversations": 474,
+    "requests": 603,
+    "follow_ups_after_window_dropped": 45,
+    "length_filter": "model tokenizer",
+    "router_estimate_over_exact": {
+      "1": 0.598,
+      "10": 0.801,
+      "50": 0.955,
+      "90": 1.029,
+      "99": 1.222
+    },
+    "single_turn_share": 0.8164556962025317,
+    "turns_mean": 1.2721518987341771,
+    "distinct_images": 473,
+    "images_in_2plus_convs": 1
+  },
+  "stats": {
+    "requests": 603,
+    "prompt_tokens_est": 488919,
+    "reuse_ceiling": 0.2161175982115647,
+    "peak_live_blocks": 19372,
+    "peak_live_tokens": 309952
+  },
+  "fingerprint": "82ccbcedbc89",
+  "source": "visionarena"
+}
