@@ -143,3 +143,55 @@ Even with the bug, cache-aware routing roughly halved TTFT p99 vs round-robin at
 
 **Next run:** same notebook, all five policies again (the cache-blind ones double as a
 run-to-run noise check). Then a scarce-cache run (`--num-gpu-blocks-override`, or 4 workers).
+
+### Run 2 (2026-11-14, 2x T4, Qwen2-VL-2B, cost-estimate fix): VALID except one cell
+
+Files: `results/phase3/run2/`. Validation: 43 pass, 4 warn, 1 fail. The router's prefill
+estimates are now realistic for every policy (median 1.03-1.17x the measured TTFT on
+mostly-uncached requests; run 1 was 7-11x). Predicted cached share within 5 points of the
+engine's for 99-100% of requests.
+
+**The one FAIL.** `24 convs / least_loaded`: 1 of 895 requests failed in 6 ms with
+`ServerDisconnectedError`. The router reused a pooled keep-alive connection the worker had just
+closed; the request never reached vLLM (no error in either vLLM log). Fixed: the router now
+retries once or twice when the connection fails before any response byte (safe, nothing ran),
+and counts retries. That cell's numbers are indicative; it's a cache-blind baseline.
+
+**Results** (requests scheduled after the 60 s warm-up; TTFT p99 and goodput with 95% bootstrap CIs;
+goodput = share of requests with TTFT <= 2 s and mean ITL <= 100 ms)
+
+| convs | policy | hit | recomputed tok/req | TTFT p50 | TTFT p99 [CI] | ITL p99 | goodput [CI] |
+|---|---|---|---|---|---|---|---|
+| 12 | round_robin | 0.75 | 542 | 0.32 s | 2.30 s [2.02, 2.42] | 0.28 s | 0.977 [0.962, 0.989] |
+| 12 | least_requests | 0.75 | 541 | 0.30 s | 3.14 s [2.28, 3.64] | 0.23 s | 0.956 [0.937, 0.973] |
+| 12 | least_loaded | 0.75 | 552 | 0.30 s | 2.29 s [2.03, 2.48] | 0.30 s | 0.971 [0.956, 0.985] |
+| 12 | session_affinity | 0.85 | 321 | 0.23 s | 1.93 s [1.69, 1.99] | 0.17 s | 0.996 [0.989, 1.000] |
+| 12 | **cache_aware** | 0.86 | 313 | 0.24 s | **1.68 s** [1.54, 1.85] | 0.18 s | **0.998** [0.994, 1.000] |
+| 24 | round_robin | 0.75 | 511 | 0.41 s | 3.11 s [2.88, 3.46] | 0.77 s | 0.828 [0.802, 0.854] |
+| 24 | least_requests | 0.76 | 500 | 0.40 s | 2.76 s [2.60, 3.12] | 0.66 s | 0.864 [0.842, 0.885] |
+| 24 | least_loaded (1 error) | 0.76 | 496 | 0.35 s | 2.78 s [2.51, 2.92] | 0.66 s | 0.884 [0.863, 0.904] |
+| 24 | session_affinity | 0.86 | 298 | 0.26 s | 1.77 s [1.56, 1.87] | 0.33 s | 0.992 [0.987, 0.998] |
+| 24 | **cache_aware** | 0.85 | 305 | 0.25 s | **1.69 s** [1.53, 1.96] | 0.32 s | **0.990** [0.982, 0.996] |
+
+**What it shows**
+
+* **Cache-aware vs the cache-blind balancers, at 24 conversations (busy):** TTFT p99 1.69 s vs
+  3.11 s (round-robin, -46%) and 2.76 s (least-requests, -39%); goodput 0.99 vs 0.83 / 0.86, i.e.
+  1.90 vs 1.59 requests/s meeting the SLO (+20%) at the same offered load; ITL p99 0.32 s vs
+  0.77 s (-58%), because fewer long recomputes compete with decoding; 40% fewer prompt tokens
+  recomputed per request (305 vs 511). The CIs don't overlap.
+* **Cache-aware vs session affinity: no measurable difference** in this setup (every CI
+  overlaps). Pinning a conversation already captures nearly all the reuse when caches are
+  large (nothing is evicted with ~200k tokens of KV per worker) and traffic is spread evenly.
+  The simulator predicted the same. Cache-aware moved only 1.3% / 3.0% of follow-ups (run 1,
+  with the bug: 2% / 6%). Where it should differ (untested so far): scarce caches, hot prefixes,
+  uneven load, worker restarts.
+* **Router overhead:** 2.3 ms median, 4.3-5.0 ms p99 per decision, the same for every policy:
+  it's prompt hashing (reading image headers, hashing ~2k tokens), not the policy. About 1% of
+  a cache-hit TTFT.
+
+**Run-to-run noise** (the cache-blind policies weren't affected by the bug, so run 1 vs run 2 is a
+repeat): hit rate within 0.005, TTFT p50 within 0.03 s, goodput within 0.05. TTFT p99 is much
+noisier than its bootstrap CI suggests when the system is overloaded: round-robin at 24 convs
+measured 4.41 s [3.92, 5.02] in run 1 and 3.11 s [2.88, 3.46] in run 2. So compare policies
+within one run, and claim tail improvements as ranges over repeated runs (Phase 6: 3 seeds).

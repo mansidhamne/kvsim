@@ -1,0 +1,298 @@
+{
+  "ok": false,
+  "counts": {
+    "PASS": 43,
+    "WARN": 4,
+    "FAIL": 1
+  },
+  "checks": [
+    {
+      "step": "phase3",
+      "name": "12 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['f5c0bd0b5a5b']"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['dce6c061d7ae']"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "476 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 831344 vs client 831344"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / round_robin: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 1.11 over 104 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "476 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 830704 vs client 830704"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_requests: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 1.10 over 94 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_loaded: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_loaded: no failed requests",
+      "status": "PASS",
+      "detail": "476 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_loaded: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 828848 vs client 828848"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / least_loaded: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 1.17 over 106 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "476 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 952288 vs client 952288"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / session_affinity: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 1.12 over 58 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "476 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 956688 vs client 956688"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "PASS",
+      "detail": "100% of requests within 5 points of the engine's cached share; bias -32 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "12 convs / cache_aware: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 1.11 over 58 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "895 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 1506208 vs client 1506208"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / round_robin: follow-ups sent on schedule",
+      "status": "WARN",
+      "detail": "35% of turns > 1 s late (system overloaded for this trace)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / round_robin: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 1.04 over 154 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "895 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 1523392 vs client 1523392"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_requests: follow-ups sent on schedule",
+      "status": "WARN",
+      "detail": "31% of turns > 1 s late (system overloaded for this trace)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_requests: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 1.03 over 153 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_loaded: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_loaded: no failed requests",
+      "status": "FAIL",
+      "detail": "1 of 895"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_loaded: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 1517424 vs client 1517424"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_loaded: follow-ups sent on schedule",
+      "status": "WARN",
+      "detail": "32% of turns > 1 s late (system overloaded for this trace)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / least_loaded: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 1.03 over 163 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "895 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 1722240 vs client 1722240"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / session_affinity: follow-ups sent on schedule",
+      "status": "WARN",
+      "detail": "20% of turns > 1 s late (system overloaded for this trace)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / session_affinity: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 1.08 over 97 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "895 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 1716912 vs client 1716912"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "PASS",
+      "detail": "100% of requests within 5 points of the engine's cached share; bias -31 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "24 convs / cache_aware: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 1.10 over 104 mostly-uncached requests with no backlog (should be 0.5-2)"
+    }
+  ]
+}

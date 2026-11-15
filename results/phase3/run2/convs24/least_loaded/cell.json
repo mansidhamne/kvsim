@@ -1,0 +1,76 @@
+{
+  "policy": "least_loaded",
+  "active_convs": 24,
+  "trace_fingerprint": "dce6c061d7ae",
+  "wall_s": 526.2,
+  "reset_ok": [
+    true,
+    true
+  ],
+  "router_capacity_blocks": [
+    12636,
+    12636
+  ],
+  "server": {
+    "prefix_hits": 1517424.0,
+    "prefix_queries": 2037167.0
+  },
+  "client_all": {
+    "cached_tokens": 1517424,
+    "prompt_tokens": 2037167,
+    "requests": 990
+  },
+  "summary": {
+    "requests": 895,
+    "ok": 894,
+    "errors": 1,
+    "missing_ttft": 0,
+    "hit_rate": 0.7598842857591553,
+    "prompt_tokens_mean": 2065.5682326621923,
+    "recomputed_tokens_per_req": 495.97539149888144,
+    "ttft_p50_s": 0.3488453719996869,
+    "ttft_p90_s": 1.4725042461001978,
+    "ttft_p99_s": 2.7755699763802157,
+    "ttft_mean_s": 0.6409696944373439,
+    "itl_p50_s": 0.02975,
+    "itl_p99_s": 0.6606886000000003,
+    "e2e_p50_s": 6.004501141999754,
+    "goodput_frac": 0.8837988826815643,
+    "goodput_rps": 1.70070787133285,
+    "throughput_rps": 1.9221654070437015,
+    "late_frac": 0.31543624161073824,
+    "per_worker": {
+      "w0": 436,
+      "w1": 458
+    },
+    "imbalance": 1.0246085011185682,
+    "decision_ms_p50": 2.343,
+    "decision_ms_p99": 4.849439999999999,
+    "prediction_exact_frac": 0.4664429530201342,
+    "prediction_mae_tokens": 28.384787472035793,
+    "prediction_bias_tokens": -22.94407158836689,
+    "prediction_share_within5pp": 0.9910514541387024,
+    "estimate_ratio_median": 1.033743842364532,
+    "estimate_ratio_n": 163,
+    "estimate_ratio_hits_median": 0.7430558390053716,
+    "ttft_p99_ci": [
+      2.506369036399875,
+      2.916031851000298
+    ],
+    "ttft_p50_ci": [
+      0.3224598144997799,
+      0.38953620346308065
+    ],
+    "goodput_ci": [
+      0.8625698324022346,
+      0.9039106145251397
+    ],
+    "routing_miss_tokens_per_req": 201.13519553072626,
+    "wrong_output_len": 0,
+    "sample_outputs": [
+      "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+      "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+      "why this door is left pair at door is photo or new chair above includes scene was of similar pair few door and why blue "
+    ]
+  }
+}

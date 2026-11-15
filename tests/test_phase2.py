@@ -105,10 +105,11 @@ def test_looks_like_text_catches_degenerate_output():
 
 
 def test_full_mock_run_validates():
+    # time_scale 4 (not 20): at millisecond timings, laptop scheduling noise breaks the R2 check
     from deploy.validate import validate_run
 
     async def go():
-        async with MockCluster(1, MockConfig(time_scale=20)) as cl:
+        async with MockCluster(1, MockConfig(time_scale=4)) as cl:
             sm = await smoke(cl.urls[0], CalibConfig.quick())
             raw = await calibrate(cl.urls[0], CalibConfig.quick(), progress=lambda *_: None)
         return sm, raw

@@ -141,8 +141,8 @@ class Router:
                 self.index.on_prefilled(d.wid, info.blocks)
 
         try:
-            async with session.post(load.url + request.path, json=body,
-                                    timeout=aiohttp.ClientTimeout(total=self.cfg.request_timeout_s)) as up:
+            up = await self._open_upstream(session, load.url + request.path, body, row)
+            async with up:
                 row["status"] = up.status
                 if up.status != 200 or not body.get("stream"):
                     data = await up.read()
@@ -180,6 +180,27 @@ class Router:
             load.inflight.pop(rid, None)
             row["router_e2e_s"] = round(time.perf_counter() - t0, 4)
             self.log_rows.append(row)
+
+    # A pooled keep-alive connection can be closed by the worker just as the router reuses it
+    # (run 2: one request failed in 6 ms with ServerDisconnectedError, never reaching vLLM).
+    # These errors happen before any response byte, so the request never ran: retrying is safe.
+    RETRYABLE = (aiohttp.ServerDisconnectedError, aiohttp.ClientOSError,
+                 aiohttp.ClientConnectorError)
+
+    async def _open_upstream(self, session: aiohttp.ClientSession, url: str, body: dict,
+                             row: dict, attempts: int = 3) -> aiohttp.ClientResponse:
+        for attempt in range(attempts):
+            try:
+                return await session.post(url, json=body, timeout=aiohttp.ClientTimeout(
+                    total=self.cfg.request_timeout_s))
+            except self.RETRYABLE as e:
+                row["retries"] = attempt + 1
+                row.setdefault("retry_errors", []).append(type(e).__name__)
+                self.counters["retries"] = self.counters.get("retries", 0) + 1
+                if attempt == attempts - 1:
+                    raise
+                await asyncio.sleep(0.05 * (attempt + 1))
+        raise RuntimeError("unreachable")
 
     def _inspect_line(self, line: bytes, row: dict, mark_prefilled) -> None:
         if not line.startswith(b"data:"):
@@ -258,7 +279,11 @@ def make_app(cfg: RouterConfig) -> web.Application:
     app[ROUTER_KEY] = router
 
     async def on_startup(a):
-        a[SESSION_KEY] = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=1024))
+        # vLLM closes idle keep-alive connections after 5 s (VLLM_HTTP_TIMEOUT_KEEP_ALIVE);
+        # aiohttp keeps them for 15 s by default, so the router could reuse a connection the
+        # worker had just closed (run 2: one ServerDisconnectedError). Drop ours first.
+        a[SESSION_KEY] = aiohttp.ClientSession(connector=aiohttp.TCPConnector(
+            limit=1024, keepalive_timeout=3.0))
         a[SCRAPE_KEY] = asyncio.create_task(router.scrape_loop(a[SESSION_KEY]))
 
     async def on_cleanup(a):

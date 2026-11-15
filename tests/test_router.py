@@ -187,3 +187,37 @@ def test_validation_fails_on_unrealistic_estimates():
     assert st["12 convs / round_robin"] == "WARN"       # doesn't act on estimates
     assert st["12 convs / least_loaded"] == "PASS"
     assert not rep["ok"]
+
+
+def test_router_retries_a_stale_connection(monkeypatch):
+    """Run 2: a reused keep-alive connection was already closed by the worker. The request
+    never reached vLLM, so the router must retry instead of returning 502."""
+    real_post = aiohttp.ClientSession.post
+    calls = {"n": 0}
+
+    def flaky_post(self, url, *a, **kw):
+        if str(url).endswith("/v1/chat/completions"):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                async def boom():
+                    raise aiohttp.ServerDisconnectedError()
+                return boom()
+        return real_post(self, url, *a, **kw)
+
+    async def go():
+        async with MockCluster(2, MockConfig(time_scale=20)) as cl:
+            async with RouterRunner(RouterConfig(cl.urls, policy="cache_aware", cost=COST)) as rr:
+                monkeypatch.setattr(aiohttp.ClientSession, "post", flaky_post)
+                try:
+                    body = {"model": "mock", "messages": [{"role": "user", "content": "hello there"}],
+                            "max_tokens": 3}
+                    async with aiohttp.ClientSession() as s:
+                        async with real_post(s, rr.url + "/v1/chat/completions", json=body) as r:
+                            status = r.status
+                finally:
+                    monkeypatch.setattr(aiohttp.ClientSession, "post", real_post)
+                return status, rr.router.log_rows[-1], rr.router.counters
+
+    status, row, counters = asyncio.run(go())
+    assert status == 200 and row.get("retries") == 1 and "error" not in row
+    assert counters["retries"] == 1 and counters["errors"] == 0
