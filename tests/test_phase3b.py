@@ -216,6 +216,13 @@ def test_own_history_lets_follow_ups_reuse_the_generated_reply():
 def test_validation_reports_reply_divergence():
     a = _cell("round_robin", 0, 3.0, 0.3, 0, history="own", reply_shas={"0:0": "x", "0:1": "y"})
     b = _cell("cache_aware", 0, 2.0, 0.4, 1, history="own", reply_shas={"0:0": "x", "0:1": "z"})
+    for c in (a, b):
+        c["server"] = {**c["server"], "prefix_queries": 1000.0}
     rep = validate_phase3b([a, b])
-    (c,) = [c for c in rep["checks"] if "replies identical" in c["name"]]
-    assert c["status"] == "WARN" and "50.0%" in c["detail"]
+    (c,) = [c for c in rep["checks"] if "same prompt tokens" in c["name"]]
+    assert c["status"] == "PASS" and "50.0%" in c["detail"]     # same totals, wording differs
+    b["server"] = {**b["server"], "prefix_queries": 1000.0}
+    a["server"] = {**a["server"], "prefix_queries": 900.0}
+    rep = validate_phase3b([a, b])
+    (c,) = [c for c in rep["checks"] if "same prompt tokens" in c["name"]]
+    assert c["status"] == "FAIL"

@@ -399,10 +399,19 @@ def validate_phase3b(cells: list[dict], block_size: int = 16) -> dict:
         keys = set.intersection(*(set(c["reply_shas"]) for c in cs))
         same = sum(1 for k in keys if len({c["reply_shas"][k] for c in cs}) == 1)
         share = same / len(keys) if keys else 0.0
-        checks.append(Check("phase3b", f"{key[0]} cache={key[1]} load={key[2]:g} seed={key[3]}: "
-                            "replies identical across policies", PASS if share >= 0.9 else WARN,
-                            f"{share:.1%} of {len(keys)} requests (own-reply history: differing "
-                            "replies make later prompts differ)"))
+        # What fairness needs is the same amount of work: reply lengths are fixed per turn, so
+        # every policy must process the same total prompt tokens even when reply WORDING differs
+        # (GPU batching isn't bit-exact; block B: 78% of replies identical, totals equal to 1 token).
+        totals = [(c.get("server") or {}).get("prefix_queries") or (c.get("client_all") or {}).get("prompt_tokens")
+                  for c in cs]
+        if any(t is None for t in totals):
+            continue
+        spread = (max(totals) - min(totals)) / max(1, max(totals))
+        tag = f"{key[0]} cache={key[1]} load={key[2]:g} seed={key[3]}"
+        checks.append(Check("phase3b", f"{tag}: same prompt tokens for every policy (own replies)",
+                            PASS if spread <= 0.005 else FAIL,
+                            f"totals {min(totals):.0f}-{max(totals):.0f} ({spread:.2%}); replies identical "
+                            f"in every policy for {share:.1%} of {len(keys)} requests"))
     groups = defaultdict(lambda: defaultdict(set))
     seeds = defaultdict(set)
     for c in cells:

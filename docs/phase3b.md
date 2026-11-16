@@ -153,6 +153,41 @@ but GPU batching isn't bit-exact). Every request's reply hash is stored per cell
 reports the share of requests whose replies were identical in all policies (WARN below 90%).
 Block A stays as the `--history canned` baseline.
 
+## Block B as run (2026-11-15): 50% cache, own replies, 1 seed (VALID, 23 pass)
+
+This ran the notebook's earlier Block B cell (50% cache = 8,188 blocks, seed 0) with the new code
+(`--history own`); the scarce sizes (1,638 / 819 blocks) are still to run. Files:
+`results/phase3b/B_x0.5_own/` (sanitized). One seed, so indicative only.
+
+| policy | hit | TTFT p50 | TTFT p99 | ITL p99 | goodput |
+|---|---|---|---|---|---|
+| round_robin | 0.23 | 0.69 s | 2.95 s | 0.52 s | 0.946 |
+| least_requests | 0.23 | 0.83 s | 3.14 s | 0.50 s | 0.904 |
+| session_affinity | 0.35 | 0.57 s | 1.98 s | 0.44 s | 0.988 |
+| cache_aware | 0.35 | 0.56 s | 1.82 s | 0.45 s | 0.986 |
+
+* **Own replies work on real vLLM.** Follow-ups that stayed on their GPU reused 0.935 of their
+  prompt (Block A, same trace, dataset replies: 0.72 full cache, 0.67 at 25%); in 92% of them the
+  hit went past the previous prompt into the generated reply. vLLM caches generated tokens, and
+  re-tokenizing the reply text reproduces them.
+* **Replies differ between policies for 22% of requests** (18% of first turns, whose prompts are
+  identical: GPU batching isn't bit-exact), so 8% of requests (a third of follow-ups) had slightly
+  different prompt text. The work was identical: total prompt tokens 446,450-446,451 in every
+  policy, because reply lengths are fixed per turn. Validation now checks equal totals (FAIL if
+  they differ by > 0.5%) and reports the identical-reply share. vLLM 0.32's `VLLM_BATCH_INVARIANT`
+  would make replies reproducible but uses slower kernels, which would distort the latency
+  comparison, so it stays off.
+
+## Remaining runs (as of 2026-11-15, ~4.8 of 6-8 GPU-hours used)
+
+| block | what | why | ~time |
+|---|---|---|---|
+| B2 | VisionArena, **1,638 blocks/GPU (~26k tokens)**, own replies, seeds 0-1 | below the measured demand peak (23-52k): evictions certain; the scarce-cache test of cache-aware vs session affinity | 1.1 h |
+| D | Mooncake, real speed, outputs capped at 64, full cache, seeds 0-1 (two windows) | cross-user prefix sharing with no sessions: where cache-aware could beat everything else; live set ~700k tokens vs ~200k cache per GPU | 1.1 h |
+
+Skipped: 5% cache (819 blocks: running requests alone use ~8-11k of its ~13k tokens, so it would
+measure preemptions, not routing), the load sweep (C) and 4 workers (E).
+
 ## Open points
 
 * `think_scale` 0.1 compresses real think times 10x. Results are reported against the cache size

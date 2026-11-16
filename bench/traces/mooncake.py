@@ -38,7 +38,9 @@ class MooncakeConfig:
     start_s: float = 600.0             # window of the original trace to replay (seconds)
     duration_s: float = 360.0          # after dilation
     output_scale: float = 0.5
-    output_cap: int = 128
+    # 64: at real speed (3.2 req/s) this keeps decode load (~174 output tok/s) near VisionArena's
+    # high load (~240 tok/s on 2x T4); 128 would be ~320 tok/s and overload the cache-blind baselines
+    output_cap: int = 64
     min_output: int = 8
 
 
