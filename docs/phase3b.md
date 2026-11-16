@@ -178,7 +178,78 @@ This ran the notebook's earlier Block B cell (50% cache = 8,188 blocks, seed 0) 
   would make replies reproducible but uses slower kernels, which would distort the latency
   comparison, so it stays off.
 
-## Remaining runs (as of 2026-11-15, ~4.8 of 6-8 GPU-hours used)
+## Block B2 (2026-11-16): scarce cache, 1,638 blocks/GPU (~26k tokens), own replies, 2 seeds
+
+Files: `results/phase3b/B2/` (sanitized; `cells_reanalyzed.json` / `validation_reanalyzed.json`
+use the corrected prediction metric). 0 errors; 3 preemptions (round-robin, seed 0).
+
+| policy | seed 0: hit / p99 / goodput | seed 1: hit / p99 / goodput |
+|---|---|---|
+| round_robin | 0.13 / 4.42 s / 0.908 | 0.09 / 3.21 s / 0.930 |
+| least_requests | 0.14 / 4.55 s / 0.854 | 0.08 / 3.52 s / 0.926 |
+| session_affinity | 0.25 / 2.67 s / 0.948 | 0.18 / 2.71 s / 0.959 |
+| cache_aware | 0.23 / 2.62 s / 0.960 | 0.17 / 2.33 s / 0.967 |
+
+Paired over 2 seeds (median [min, max], same sign in both): cache-aware vs round-robin TTFT p99
+**-34%** [-41, -28], goodput +4.8%; vs least-requests p99 -38%, p50 -26%, goodput +8.4%;
+**vs session affinity p99 -8.1% [-14.2, -1.9], p50 -2.1%, goodput +1.0%**, hit rate -5.8%.
+
+* The cache really was scarce: session-affinity follow-ups reused 0.63 of their prompt (0.935 at
+  50% cache); 37% of follow-ups reused less than half.
+* Why cache-aware edges out session affinity here (the reverse of block A's 25% result, where the
+  cache was barely scarce): 82-92% of its moves were conversations whose cache had **already been
+  evicted** from their GPU (router saw 0 cached tokens there), so moving cost nothing; session
+  affinity keeps returning them to a GPU that lost their history. Cache-aware's follow-ups that
+  stayed reused 0.68-0.73 vs 0.58-0.63, and follow-up TTFT p99 was 1.96 / 2.27 s vs 2.61 / 3.44 s.
+  Small (2 seeds, -2% and -14%), but consistent and explained.
+* The router's view gets less accurate when the engine evicts on its own: 87-91% of predictions
+  within 5 points (99% elsewhere). This is the case the KV-event index (Phase 4) is for.
+
+## Block D (2026-11-16): Mooncake production prefix pattern, real speed, full cache, 2 windows
+
+Files: `results/phase3b/D/`. 0 errors, 0 preemptions, validation 47 pass / 0 warn / 0 fail
+(after the metric fix). ~940-1,060 requests per window, reuse ceiling 0.22-0.23. No sessions, so
+session affinity routes each request like a cache-blind balancer that uses prefill-backlog estimates.
+
+| policy | window 0: hit / p50 / p99 / goodput | window 1: hit / p50 / p99 / goodput |
+|---|---|---|
+| round_robin | 0.15 / 0.68 / 4.52 / 0.772 | 0.16 / 0.68 / 4.10 / 0.811 |
+| least_requests | 0.13 / 0.77 / 4.88 / 0.767 | 0.15 / 0.71 / 4.62 / 0.790 |
+| session_affinity | 0.13 / 0.70 / 3.37 / 0.827 | 0.16 / 0.65 / 3.47 / 0.874 |
+| cache_aware | **0.20 / 0.63 / 3.19 / 0.873** | **0.21 / 0.60 / 3.04 / 0.869** |
+
+Paired over both windows (same sign in both unless noted): cache-aware vs round-robin TTFT p99
+**-28%**, p50 -10%, goodput +10%, hit +35%; vs least-requests p99 -34%, p50 -17%, goodput +12%;
+**vs session affinity: hit +44%, p99 -8.8% [-12.3, -5.3], p50 -8.3% [-9.8, -6.8]**, goodput +2.5%
+(mixed).
+
+* This is where cache-aware routing earns its keep: requests from different users share prefixes,
+  so the router can send a request to the GPU that already holds its prefix. The reuse visible on
+  the other GPU but missed drops from 43-66 to 14-21 tokens per request; cache-aware reaches ~90%
+  of the reuse ceiling vs ~60-70% for the others. Load stays balanced enough (439/497 and 479/581
+  requests per GPU).
+* Session affinity (= prefill-backlog balancing here) beats least-requests on TTFT p99 (3.4 vs
+  4.6-4.9 s): counting estimated prefill work balances better than counting requests.
+
+## Phase 3b conclusions
+
+| workload | what drives reuse | best policy | vs cache-blind (TTFT p99) |
+|---|---|---|---|
+| VisionArena, ample cache (A, B) | follow-ups in a conversation | session affinity = cache-aware | -22 to -50% |
+| VisionArena, scarce cache (B2) | follow-ups whose cache survived | cache-aware, slightly (-8% p99 vs affinity) | -34 to -38% |
+| Mooncake (D) | prefixes shared across users | **cache-aware** (-9% p99, +44% reuse vs affinity) | -28 to -34% |
+
+Claims that hold (paired, same sign in every seed/window): routing on cache state cuts TTFT p99 by
+22-50% vs cache-blind balancers on real VLM chats and by 28-34% on a production prefix trace, on
+2x T4 with Qwen2-VL-2B. Cache-aware routing beats simple session pinning only when the cache is
+scarce or prefixes are shared across sessions; on ample-cache chat traffic they are equivalent.
+
+## Remaining runs (as of 2026-11-16, ~7 of 6-8 GPU-hours used)
+
+Done: B2 and D. Optional: reduced load sweep C (round-robin, session affinity, cache-aware at 0.4
+and 0.8 conversations/s, ~50 min).
+
+## Remaining runs (as planned on 2026-11-15)
 
 | block | what | why | ~time |
 |---|---|---|---|

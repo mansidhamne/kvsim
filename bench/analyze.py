@@ -58,8 +58,11 @@ def summarize_cell(records: list[dict], decisions: list[dict], warmup_s: float,
             for d in dec if d.get("actual_cached_tokens") is not None]
     # share of the prompt predicted to be cached vs the engine's answer (robust to the router
     # counting words while the engine counts model tokens, ~2% apart)
-    share_err = [abs(d.get("predicted_resident_tokens", 0) / max(1, d.get("prompt_tokens_est") or 1)
-                     - d["actual_cached_tokens"] / max(1, d.get("prompt_tokens") or 1))
+    # Both over the ENGINE's prompt length: dividing the prediction by the router's own estimate
+    # made very short prompts look wrong (the chat template adds ~17 tokens the router doesn't
+    # count: Mooncake block D showed 87% vs 99% within 5 points).
+    share_err = [abs(d.get("predicted_resident_tokens", 0) - d["actual_cached_tokens"])
+                 / max(1, d.get("prompt_tokens") or 1)
                  for d in dec if d.get("actual_cached_tokens") is not None and d.get("prompt_tokens")]
     # Is the router's prefill estimate realistic? Compare it to the measured TTFT on requests
     # that found the chosen worker with no prefill backlog (TTFT is then ~ prefill time) and
@@ -116,7 +119,8 @@ def summarize_cell(records: list[dict], decisions: list[dict], warmup_s: float,
                                    [0.0] * (len(meas) - len(ok)), np.mean),
         "routing_miss_tokens_per_req": float(np.mean(routing_miss)) if routing_miss else None,
         "wrong_output_len": wrong_len,
-        "sample_outputs": [r.get("output_text", "")[:120] for r in ok[:3]],
+        # sanitized records (deploy/sanitize_results.py) have no output_text: skip, don't fake ""
+        "sample_outputs": [r["output_text"][:120] for r in ok[:3] if "output_text" in r],
     }
 
 
