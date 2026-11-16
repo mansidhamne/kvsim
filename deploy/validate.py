@@ -339,7 +339,7 @@ def validate_phase3(cells: list[dict], block_size: int = 16) -> dict:
         if (s.get("late_frac") or 0) > 0.2:
             checks.append(Check("phase3", f"{tag}: follow-ups sent on schedule", WARN,
                                 f"{s['late_frac']:.0%} of turns > 1 s late (system overloaded for this trace)"))
-        if s.get("prediction_share_within5pp") is not None and c["policy"] == "cache_aware":
+        if s.get("prediction_share_within5pp") is not None and c["policy"] in ("cache_aware", "cache_aware_v2"):
             checks.append(Check("phase3", f"{tag}: router's predicted reuse matches the engine",
                                 PASS if s["prediction_share_within5pp"] >= 0.9 else WARN,
                                 f"{s['prediction_share_within5pp']:.0%} of requests within 5 points of the "
@@ -348,7 +348,7 @@ def validate_phase3(cells: list[dict], block_size: int = 16) -> dict:
         # realistic. Caught the run-1 bug (image weight inside the quadratic term, ~9x too high).
         r = s.get("estimate_ratio_median")
         if r is not None and s.get("estimate_ratio_n", 0) >= 10:
-            uses = c["policy"] in ("least_loaded", "session_affinity", "cache_aware")
+            uses = c["policy"] in ("least_loaded", "session_affinity", "cache_aware", "cache_aware_v2")
             good = 0.5 <= r <= 2.0
             checks.append(Check("phase3", f"{tag}: router's prefill estimates are realistic",
                                 PASS if good else (FAIL if uses else WARN),

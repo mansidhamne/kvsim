@@ -244,6 +244,27 @@ Claims that hold (paired, same sign in every seed/window): routing on cache stat
 2x T4 with Qwen2-VL-2B. Cache-aware routing beats simple session pinning only when the cache is
 scarce or prefixes are shared across sessions; on ample-cache chat traffic they are equivalent.
 
+## Router v2: `cache_aware_v2` (built 2026-11-16, block V to run)
+
+Two changes, each from a gap measured above (`router/policies.py`, `CacheAwareV2`):
+
+1. **Decode-aware estimate.** Over 30,509 routed requests from blocks A-D, measured TTFT /
+   router estimate was ~1.25x at low load and grew with the requests in flight on the chosen
+   worker (1.24 at 2-3, 1.39 at 10-12, 1.63 at 13+): v1 counted only prefill backlog, not requests
+   decoding. v2 multiplies each worker's estimate by (1 + 0.02 x requests in flight), fitted from
+   those medians. The constant part (~0.2 s of image preprocessing / HTTP) is the same on every
+   worker, so it doesn't change decisions and is not modeled.
+2. **Switching cost.** v1's moves cost the whole cache when home still had it (block A, 25%:
+   +12% TTFT p99 vs session affinity) and were free when home had already evicted it (block B2:
+   82-92% of moves, -8% p99). v2 charges every non-home worker 1x the prefill time of the prefix
+   still cached at home; nothing once home's copy is gone.
+
+Tested: unit tests (stays when home holds the cache, moves once it is evicted, prefers the worker
+with fewer requests decoding) and mock runs on VisionArena and Mooncake (VALID).
+
+Block V (`deploy/kaggle_phase3b.ipynb`): V1 = B2's scarce-cache setup with seeds 0-3, V2 =
+Mooncake with windows 0-2; policies round-robin, session affinity, cache-aware v1 and v2 (~4 h).
+
 ## Remaining runs (as of 2026-11-16, ~7 of 6-8 GPU-hours used)
 
 Done: B2 and D. Optional: reduced load sweep C (round-robin, session affinity, cache-aware at 0.4

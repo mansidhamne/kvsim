@@ -66,22 +66,26 @@ class Router:
         self.loads = [WorkerLoad(f"w{i}", u.rstrip("/")) for i, u in enumerate(cfg.workers)]
         self.index = ShadowIndex([cfg.capacity_blocks or DEFAULT_CAPACITY_BLOCKS] * n)
         self._capacity_known = [cfg.capacity_blocks is not None] * n
-        kw = {"alpha": cfg.alpha, "pending_aware": cfg.pending_aware} if cfg.policy == "cache_aware" else {}
-        self.policy = make_policy(cfg.policy, cfg.seed, **kw)
+        self.policy = make_policy(cfg.policy, cfg.seed, **self._policy_kw())
         self._img_cache: dict = {}
         self.log_rows: list[dict] = []
         self.counters = {"requests": 0, "errors": 0, "decision_s_sum": 0.0}
 
     def reset(self) -> None:
         self.index.reset()
-        kw = {"alpha": self.cfg.alpha, "pending_aware": self.cfg.pending_aware} \
-            if self.cfg.policy == "cache_aware" else {}
-        self.policy = make_policy(self.cfg.policy, self.cfg.seed, **kw)
+        self.policy = make_policy(self.cfg.policy, self.cfg.seed, **self._policy_kw())
         for l in self.loads:
             l.inflight.clear()
             l.routed = 0
         self.log_rows.clear()
         self.counters = {"requests": 0, "errors": 0, "decision_s_sum": 0.0}
+
+    def _policy_kw(self) -> dict:
+        if self.cfg.policy == "cache_aware":
+            return {"alpha": self.cfg.alpha, "pending_aware": self.cfg.pending_aware}
+        if self.cfg.policy == "cache_aware_v2":
+            return {"pending_aware": self.cfg.pending_aware}
+        return {}
 
     # ------------------------------------------------------------------ worker state
     async def scrape_loop(self, session: aiohttp.ClientSession) -> None:

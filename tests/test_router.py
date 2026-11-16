@@ -2,6 +2,7 @@
 import asyncio
 
 import aiohttp
+import numpy as np
 
 from bench.loadgen import run as replay
 from bench.loadgen import summarize
@@ -221,3 +222,51 @@ def test_router_retries_a_stale_connection(monkeypatch):
     status, row, counters = asyncio.run(go())
     assert status == 200 and row.get("retries") == 1 and "error" not in row
     assert counters["retries"] == 1 and counters["errors"] == 0
+
+
+# ------------------------------------------------------------------ cache_aware_v2
+
+def _two_workers_with_prefix_on_w0(backlog_w0: float, cached_on_w0: bool = True):
+    loads = [WorkerLoad("w0", "a"), WorkerLoad("w1", "b")]
+    idx = ShadowIndex([1000, 1000])
+    msgs = [{"role": "user", "content": " ".join(["word"] * 2000)}]
+    info = prompt_info(msgs, 16)
+    if cached_on_w0:
+        idx.on_routed(0, info.blocks)
+        idx.on_prefilled(0, info.blocks)
+    if backlog_w0:
+        loads[0].inflight["x"] = InFlight("x", (), backlog_w0, backlog_w0, sent_at=0.0)
+    return loads, idx, info
+
+
+def test_v2_switching_cost_keeps_a_conversation_whose_cache_is_still_home():
+    from router.policies import CacheAwareV2
+    loads, idx, info = _two_workers_with_prefix_on_w0(0.0)
+    v1, v2 = make_policy("cache_aware", 0), CacheAwareV2(np.random.default_rng(0))
+    assert decide(v2, info, "c", loads, idx, COST, 0.0).wid == 0           # turn 1 -> home = w0
+    # w0 gets a backlog a bit longer than recomputing the whole prompt on idle w1
+    full = COST.request_prefill_time(__import__("router.policies", fromlist=["_Req"])._Req(info, "c"), 0)
+    loads[0].inflight["x"] = InFlight("x", (), full * 1.3, full * 1.3, sent_at=0.0)
+    assert decide(v1, info, "c", loads, idx, COST, 0.0).wid == 1           # v1 moves (loses cache)
+    assert decide(v2, info, "c", loads, idx, COST, 0.0).wid == 0           # v2 stays
+
+
+def test_v2_moves_freely_once_home_lost_the_cache():
+    from router.policies import CacheAwareV2
+    loads, idx, info = _two_workers_with_prefix_on_w0(0.0)
+    v2 = CacheAwareV2(np.random.default_rng(0))
+    assert decide(v2, info, "c", loads, idx, COST, 0.0).wid == 0
+    idx.reset()                                                             # home evicted it
+    loads[0].inflight["x"] = InFlight("x", (), 0.5, 0.5, sent_at=0.0)
+    assert decide(v2, info, "c", loads, idx, COST, 0.0).wid == 1
+
+
+def test_v2_counts_decoding_requests():
+    from router.policies import CacheAwareV2
+    loads = [WorkerLoad("w0", "a"), WorkerLoad("w1", "b")]
+    for j in range(10):                                   # w0: 10 requests decoding, no backlog
+        loads[0].inflight[f"d{j}"] = InFlight(f"d{j}", (), 0.1, 0.1, sent_at=0.0, first_token_at=0.1)
+    idx = ShadowIndex([1000, 1000])
+    info = prompt_info([{"role": "user", "content": "hello " * 300}], 16)
+    assert decide(make_policy("cache_aware", 0), info, "n", loads, idx, COST, 1.0).wid in (0, 1)
+    assert decide(CacheAwareV2(np.random.default_rng(0)), info, "n", loads, idx, COST, 1.0).wid == 1
