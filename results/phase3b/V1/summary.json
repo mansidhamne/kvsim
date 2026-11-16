@@ -1,0 +1,275 @@
+{
+  "aggregate": [
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "policy": "cache_aware",
+      "seeds": 4,
+      "hit_rate": {
+        "median": 0.13873746513480828,
+        "min": 0.10593187345703045,
+        "max": 0.23449106605099376
+      },
+      "ttft_p50_s": {
+        "median": 0.784374875750018,
+        "min": 0.7371312134991967,
+        "max": 1.128042225000172
+      },
+      "ttft_p99_s": {
+        "median": 3.643267674894696,
+        "min": 2.347939625700087,
+        "max": 14.85825348889975
+      },
+      "itl_p99_s": {
+        "median": 0.5787936,
+        "min": 0.5236396000000002,
+        "max": 0.8381744000000007
+      },
+      "goodput_frac": {
+        "median": 0.9275726127097513,
+        "min": 0.6183953033268101,
+        "max": 0.9465020576131687
+      },
+      "recomputed_tokens_per_req": {
+        "median": 684.2475739605095,
+        "min": 676.9300411522634,
+        "max": 763.9960861056751
+      },
+      "share_of_ceiling": 0.62366785562163
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "policy": "cache_aware_v2",
+      "seeds": 4,
+      "hit_rate": {
+        "median": 0.16031257106063437,
+        "min": 0.14337224487049707,
+        "max": 0.23508092529830224
+      },
+      "ttft_p50_s": {
+        "median": 0.7594036235000203,
+        "min": 0.7552731309999672,
+        "max": 0.8542750370006615
+      },
+      "ttft_p99_s": {
+        "median": 3.4745753982099905,
+        "min": 2.6669048760497778,
+        "max": 4.391518702600114
+      },
+      "itl_p99_s": {
+        "median": 0.5694654500000003,
+        "min": 0.4912684000000008,
+        "max": 0.6884128000000003
+      },
+      "goodput_frac": {
+        "median": 0.9288361749444032,
+        "min": 0.8101761252446184,
+        "max": 0.948559670781893
+      },
+      "recomputed_tokens_per_req": {
+        "median": 674.9164139542197,
+        "min": 667.3786008230453,
+        "max": 725.1017612524462
+      },
+      "share_of_ceiling": 0.7184693956877233
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "policy": "round_robin",
+      "seeds": 4,
+      "hit_rate": {
+        "median": 0.08802888665595343,
+        "min": 0.06335421933970906,
+        "max": 0.12806559663563646
+      },
+      "ttft_p50_s": {
+        "median": 0.8606102600001009,
+        "min": 0.8138290225001583,
+        "max": 1.0904505670005165
+      },
+      "ttft_p99_s": {
+        "median": 3.3204865853253063,
+        "min": 2.921438171750026,
+        "max": 7.708134164700458
+      },
+      "itl_p99_s": {
+        "median": 0.633046,
+        "min": 0.5521512999999946,
+        "max": 0.7355829999999993
+      },
+      "goodput_frac": {
+        "median": 0.887486802794438,
+        "min": 0.726027397260274,
+        "max": 0.9259259259259259
+      },
+      "recomputed_tokens_per_req": {
+        "median": 749.0201414246798,
+        "min": 722.4952153110048,
+        "max": 800.3757338551859
+      },
+      "share_of_ceiling": 0.39573762320852607
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "policy": "session_affinity",
+      "seeds": 4,
+      "hit_rate": {
+        "median": 0.15781524617333792,
+        "min": 0.14151412232708652,
+        "max": 0.22472764927778188
+      },
+      "ttft_p50_s": {
+        "median": 0.7708609682499628,
+        "min": 0.7638985800001592,
+        "max": 0.9538995150005576
+      },
+      "ttft_p99_s": {
+        "median": 3.4757309957697986,
+        "min": 2.639452834300002,
+        "max": 10.011024596500167
+      },
+      "itl_p99_s": {
+        "median": 0.6104631000000003,
+        "min": 0.4927954000000001,
+        "max": 0.7282889
+      },
+      "goodput_frac": {
+        "median": 0.9147965945593819,
+        "min": 0.7279843444227005,
+        "max": 0.9444444444444444
+      },
+      "recomputed_tokens_per_req": {
+        "median": 678.2343360574973,
+        "min": 667.5287081339712,
+        "max": 733.5753424657535
+      },
+      "share_of_ceiling": 0.7109864740120126
+    }
+  ],
+  "paired": [
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "session_affinity",
+      "metric": "ttft_p99_s",
+      "seeds": 4,
+      "median": 0.04842040849758078,
+      "min": -0.11044456063456265,
+      "max": 0.48418909030491886,
+      "same_sign_all_seeds": false
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "round_robin",
+      "metric": "ttft_p99_s",
+      "seeds": 4,
+      "median": 0.16112007400588602,
+      "min": -0.28225350296567264,
+      "max": 0.9276070150599345,
+      "same_sign_all_seeds": false
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "session_affinity",
+      "b": "round_robin",
+      "metric": "ttft_p99_s",
+      "seeds": 4,
+      "median": 0.10732716694800959,
+      "min": -0.19314023019596127,
+      "max": 0.2987610727309131,
+      "same_sign_all_seeds": false
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "session_affinity",
+      "metric": "goodput_frac",
+      "seeds": 4,
+      "median": -0.006662613365759629,
+      "min": -0.15053763440860213,
+      "max": 0.04415584415584406,
+      "same_sign_all_seeds": false
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "round_robin",
+      "metric": "goodput_frac",
+      "seeds": 4,
+      "median": 0.02183497170092341,
+      "min": -0.1482479784366577,
+      "max": 0.06914893617021267,
+      "same_sign_all_seeds": false
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "session_affinity",
+      "b": "round_robin",
+      "metric": "goodput_frac",
+      "seeds": 4,
+      "median": 0.02196808510638304,
+      "min": 0.0026954177897573484,
+      "max": 0.03753351206434319,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "session_affinity",
+      "metric": "hit_rate",
+      "seeds": 4,
+      "median": -0.12482641066996364,
+      "min": -0.2514395615429361,
+      "max": 0.04344555200300926,
+      "same_sign_all_seeds": false
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "round_robin",
+      "metric": "hit_rate",
+      "seeds": 4,
+      "median": 0.6250870170621903,
+      "min": 0.5733407929022536,
+      "max": 0.831023102310231,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "session_affinity",
+      "b": "round_robin",
+      "metric": "hit_rate",
+      "seeds": 4,
+      "median": 0.837354302374504,
+      "min": 0.6953211851805365,
+      "max": 1.2336968839956728,
+      "same_sign_all_seeds": true
+    }
+  ]
+}

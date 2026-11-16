@@ -201,7 +201,9 @@ Paired over 2 seeds (median [min, max], same sign in both): cache-aware vs round
   evicted** from their GPU (router saw 0 cached tokens there), so moving cost nothing; session
   affinity keeps returning them to a GPU that lost their history. Cache-aware's follow-ups that
   stayed reused 0.68-0.73 vs 0.58-0.63, and follow-up TTFT p99 was 1.96 / 2.27 s vs 2.61 / 3.44 s.
-  Small (2 seeds, -2% and -14%), but consistent and explained.
+  Small (2 seeds, -2% and -14%). **Did not replicate:** block V re-ran these seeds in another
+  session plus 2 more; pooled over 6 seed-sessions cache-aware vs session affinity TTFT p99 is +1%
+  (better in 3 of 6). See "Final results".
 * The router's view gets less accurate when the engine evicts on its own: 87-91% of predictions
   within 5 points (99% elsewhere). This is the case the KV-event index (Phase 4) is for.
 
@@ -231,20 +233,11 @@ Paired over both windows (same sign in both unless noted): cache-aware vs round-
 * Session affinity (= prefill-backlog balancing here) beats least-requests on TTFT p99 (3.4 vs
   4.6-4.9 s): counting estimated prefill work balances better than counting requests.
 
-## Phase 3b conclusions
+## Phase 3b conclusions (first pass)
 
-| workload | what drives reuse | best policy | vs cache-blind (TTFT p99) |
-|---|---|---|---|
-| VisionArena, ample cache (A, B) | follow-ups in a conversation | session affinity = cache-aware | -22 to -50% |
-| VisionArena, scarce cache (B2) | follow-ups whose cache survived | cache-aware, slightly (-8% p99 vs affinity) | -34 to -38% |
-| Mooncake (D) | prefixes shared across users | **cache-aware** (-9% p99, +44% reuse vs affinity) | -28 to -34% |
+Superseded by "Final results" below, which pools every session.
 
-Claims that hold (paired, same sign in every seed/window): routing on cache state cuts TTFT p99 by
-22-50% vs cache-blind balancers on real VLM chats and by 28-34% on a production prefix trace, on
-2x T4 with Qwen2-VL-2B. Cache-aware routing beats simple session pinning only when the cache is
-scarce or prefixes are shared across sessions; on ample-cache chat traffic they are equivalent.
-
-## Router v2: `cache_aware_v2` (built 2026-11-16, block V to run)
+## Router v2: `cache_aware_v2` (built and run 2026-11-16)
 
 Two changes, each from a gap measured above (`router/policies.py`, `CacheAwareV2`):
 
@@ -265,20 +258,66 @@ with fewer requests decoding) and mock runs on VisionArena and Mooncake (VALID).
 Block V (`deploy/kaggle_phase3b.ipynb`): V1 = B2's scarce-cache setup with seeds 0-3, V2 =
 Mooncake with windows 0-2; policies round-robin, session affinity, cache-aware v1 and v2 (~4 h).
 
-## Remaining runs (as of 2026-11-16, ~7 of 6-8 GPU-hours used)
+## Block V (2026-11-16): router v2 next to v1, session affinity and round-robin
 
-Done: B2 and D. Optional: reduced load sweep C (round-robin, session affinity, cache-aware at 0.4
-and 0.8 conversations/s, ~50 min).
+Files: `results/phase3b/V1/` (VisionArena, 1,638 blocks/GPU, seeds 0-3; 94 pass / 9 warn / 0 fail:
+preemptions in the seed-2 burst, scarce-cache prediction drift) and `results/phase3b/V2/`
+(Mooncake, windows 0-2; 73 pass / 0 warn / 0 fail).
 
-## Remaining runs (as planned on 2026-11-15)
+* **v2 does what it was built to do.** Moves of follow-ups whose home GPU still held their cache:
+  4-16 per seed with v1, **2 with v2**; total moves 19-28% -> 16-21% of follow-ups. Reuse +13% vs v1
+  in all 4 seeds. Estimated / measured TTFT on the chosen GPU: 0.69 -> 0.77 (VisionArena),
+  0.90 -> 0.95 (Mooncake).
+* **Its latency effect is within noise.** v2 vs v1: TTFT p50 -3% (better in 3/4 seeds), p99 -5%
+  (2/4) on VisionArena; Mooncake -1% / 0%. v2 vs session affinity on scarce VisionArena: p50 -2%
+  (4/4), ITL p99 -4% (4/4), p99 -9% (2/4).
+* **Seed 2 had a burst**: 15-38 preemptions in every policy; TTFT p99 4.4-14.9 s.
 
-| block | what | why | ~time |
-|---|---|---|---|
-| B2 | VisionArena, **1,638 blocks/GPU (~26k tokens)**, own replies, seeds 0-1 | below the measured demand peak (23-52k): evictions certain; the scarce-cache test of cache-aware vs session affinity | 1.1 h |
-| D | Mooncake, real speed, outputs capped at 64, full cache, seeds 0-1 (two windows) | cross-user prefix sharing with no sessions: where cache-aware could beat everything else; live set ~700k tokens vs ~200k cache per GPU | 1.1 h |
+### Repeatability across Kaggle sessions (same traces run twice)
 
-Skipped: 5% cache (819 blocks: running requests alone use ~8-11k of its ~13k tokens, so it would
-measure preemptions, not routing), the load sweep (C) and 4 workers (E).
+| | hit rate | TTFT p50 | TTFT p99 | goodput |
+|---|---|---|---|---|
+| VisionArena scarce cache (B2 vs V1, 6 cells) | 6% | 10% | 14% | 2% |
+| Mooncake (D vs V2, 6 cells) | 4% | 6% | 7% | 2% |
+
+(median absolute change.) The session shifts all policies together (V1's TTFT p50 ~10% higher for
+every policy), which the paired, same-session comparisons cancel; but on scarce-cache VisionArena a
+single cell's TTFT p99 moved by up to 50%, so p99 differences under ~15% there are noise.
+
+## Final results (all sessions pooled; `results/phase3b/pooled_paired.json`)
+
+Each comparison is computed within one session and seed (same trace, same GPUs), then summarised:
+median change, and in how many of the n seed-sessions the first policy was better.
+
+| workload | comparison | reuse | TTFT p50 | TTFT p99 | goodput | ITL p99 |
+|---|---|---|---|---|---|---|
+| VisionArena, ample cache (n=7) | session affinity vs round-robin | +70% (7/7) | -11% (7/7) | **-33% (7/7)** | +5% (7/7) | -11% (7/7) |
+| | cache-aware vs round-robin | +63% (7/7) | -13% (7/7) | **-38% (7/7)** | +5% (7/7) | -10% (7/7) |
+| | cache-aware vs session affinity | -3% (0/7) | -1% (5/7) | +6% (2/7) | 0% (2/7) | +2% (1/7) |
+| VisionArena, scarce cache (n=6; v2 n=4) | session affinity vs round-robin | +91% (6/6) | -10% (6/6) | -4% (3/6) | +3% (6/6) | -7% (6/6) |
+| | cache-aware v2 vs round-robin | +86% (4/4) | -12% (4/4) | -13% (3/4) | +5% (4/4) | -10% (4/4) |
+| | cache-aware v1 vs session affinity | -7% (1/6) | -1% (4/6) | +1% (3/6) | +1% (4/6) | 0% (3/6) |
+| | cache-aware v2 vs session affinity | +2% (3/4) | -2% (4/4) | -9% (2/4) | +2% (3/4) | -4% (4/4) |
+| | cache-aware v2 vs v1 | **+13% (4/4)** | -3% (3/4) | -5% (2/4) | +1% (3/4) | -6% (3/4) |
+| Mooncake (n=5; v2 n=3) | cache-aware vs round-robin | +35% (5/5) | -8% (5/5) | **-26% (5/5)** | **+12% (5/5)** | -9% (5/5) |
+| | cache-aware vs session affinity | **+40% (5/5)** | -5% (5/5) | -5% (3/5) | +2% (4/5) | -5% (3/5) |
+| | session affinity vs round-robin | -2% (2/5) | -4% (4/5) | -24% (5/5) | +8% (5/5) | -11% (4/5) |
+| | cache-aware v2 vs v1 | +2% (2/3) | -1% (3/3) | 0% (2/3) | +2% (2/3) | -2% (3/3) |
+
+What holds in every seed and session:
+
+1. **Routing on cache state beats cache-blind balancing on real traffic.** On VisionArena chats,
+   keeping a conversation where its cache is cuts TTFT p99 by 33-38% and p50 by 11-13% with an ample
+   cache (7/7); with a scarce cache it still cuts p50 by 10-12%, improves goodput and inter-token
+   latency, and nearly doubles reuse, while p99 is dominated by burst and preemption noise.
+2. **Cache-aware routing beats session pinning only where prefixes are shared across users.** On the
+   Mooncake production trace: +40% reuse and -5% TTFT p50 vs session affinity in 5/5 windows, and
+   -26% p99 / +12% goodput vs round-robin. On VisionArena chats (images almost never shared across
+   conversations) it is equivalent to session affinity; the -8% p99 seen in B2 did not replicate.
+3. **Router v2 fixes the measured flaws** (harmful moves 4-16 -> 2 per seed, +13% reuse under a scarce
+   cache, estimates closer to measured), but its latency gain over v1 is within run-to-run noise.
+4. Balancing on estimated prefill work beats counting requests: on Mooncake (no sessions, so session
+   affinity = prefill-backlog balancing) TTFT p99 -24% vs round-robin in 5/5.
 
 ## Open points
 
