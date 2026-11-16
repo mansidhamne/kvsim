@@ -21,9 +21,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import hashlib
 import json
-import math
 import time
 from dataclasses import dataclass, field
 
@@ -44,56 +42,27 @@ class MockConfig:
     decode_tps: float = 40.0              # output tokens per second per sequence
     image_patch: int = 28                 # Qwen2-VL: one token per 28x28 pixels
     time_scale: float = 1.0
+    tokens_per_chunk: int = 1             # >1 emulates vLLM putting several tokens in one chunk
+    empty_content: bool = False           # stream "" deltas (what vLLM sends when a token
+                                          # decodes to nothing); for loadgen tests
 
 
 # ---------------------------------------------------------------------------------- tokens
 
 
-def _image_size_from_part(part: dict) -> tuple[int, int] | None:
-    """Image size for token counting. Reads the JPEG header when the image is a data URL."""
-    url = part.get("image_url", {}).get("url", "")
-    if url.startswith("data:"):
-        import base64
-        import io
-        from PIL import Image
-        raw = base64.b64decode(url.split(",", 1)[1])
-        with Image.open(io.BytesIO(raw)) as im:
-            return im.size
-    return None
+# Tokenization and block hashing are shared with the router (router/hashing.py), so on the
+# mock the router's shadow index sees exactly what the "engine" caches.
+from router.hashing import block_hashes, blocks_with_reply, tokenize  # noqa: E402,F401
 
 
-def tokenize(messages: list[dict], cfg: MockConfig, _img_cache: dict | None = None) -> list:
-    """Messages -> list of hashable token keys."""
-    toks: list = []
-    for m in messages:
-        toks.append(("role", m.get("role", "")))
-        content = m.get("content", "")
-        parts = [{"type": "text", "text": content}] if isinstance(content, str) else content
-        for p in parts:
-            if p.get("type") == "text":
-                toks.extend(("w", w) for w in p.get("text", "").split())
-            elif p.get("type") == "image_url":
-                url = p.get("image_url", {}).get("url", "")
-                ident = p.get("uuid") or hashlib.sha1(url.encode()).hexdigest()[:16]
-                n = None if _img_cache is None else _img_cache.get(ident)
-                if n is None:
-                    size = _image_size_from_part(p) or (448, 448)
-                    n = max(1, math.ceil(size[0] / cfg.image_patch) * math.ceil(size[1] / cfg.image_patch))
-                    if _img_cache is not None:
-                        _img_cache[ident] = n
-                toks.extend(("img", ident, i) for i in range(n))
-    toks.append(("role", "assistant-start"))
-    return toks
-
-
-def block_hashes(tokens: list, block_size: int) -> list[int]:
-    """Chained hashes over FULL blocks only, like vLLM: h_i = H(h_{i-1}, tokens of block i)."""
-    out, parent = [], b"none"
-    for i in range(0, len(tokens) - block_size + 1, block_size):
-        d = hashlib.sha256(parent + repr(tokens[i:i + block_size]).encode()).digest()
-        out.append(int.from_bytes(d[:8], "big"))
-        parent = d
-    return out
+def messages_of(body: dict) -> list[dict]:
+    """Chat messages, or a /v1/completions prompt as one message (same rule as the router)."""
+    if "messages" in body:
+        return body.get("messages") or []
+    prompt = body.get("prompt", "")
+    if isinstance(prompt, list):
+        prompt = " ".join(str(x) for x in prompt)
+    return [{"role": "prompt", "content": str(prompt)}]
 
 
 # ---------------------------------------------------------------------------------- engine
@@ -120,6 +89,7 @@ class MockEngine:
         self.prefix_queries = 0
         self.prefix_hits = 0
         self.requests_done = 0
+        self.other_resets = 0
         self.ttft_sum = 0.0          # sums only (no buckets): enough for mean values
         self.itl_sum = 0.0
         self.itl_count = 0
@@ -178,6 +148,9 @@ class MockEngine:
             "# TYPE vllm:inter_token_latency_seconds histogram",
             f"vllm:inter_token_latency_seconds_sum{lab} {self.itl_sum:.6f}",
             f"vllm:inter_token_latency_seconds_count{lab} {self.itl_count}",
+            "# TYPE vllm:cache_config_info gauge",
+            f'vllm:cache_config_info{{block_size="{c.block_size}",num_gpu_blocks="{c.cache_blocks}",worker="{wid}"}} 1.0',
+            "# TYPE vllm:num_preemptions counter", f"vllm:num_preemptions_total{lab} 0",
             "# TYPE kvroute:mock_requests_done counter", f"kvroute:mock_requests_done{lab} {self.requests_done}",
         ]
         return "\n".join(lines) + "\n"
@@ -188,9 +161,30 @@ class MockEngine:
 ENGINE_KEY = web.AppKey("engine", MockEngine)
 
 
-def _chunk(rid: str, delta: dict, finish: str | None = None) -> bytes:
-    obj = {"id": rid, "object": "chat.completion.chunk", "model": "mock",
-           "choices": [{"index": 0, "delta": delta, "finish_reason": finish}]}
+_REPLY_WORDS = ("the image shows a small wooden table near a bright window with green plants "
+                "on the left and a red chair in the corner while soft light falls across").split()
+
+
+def _reply_tokens(messages: list[dict], n: int) -> list[str]:
+    """Readable fake output (so output checks can run on the mock): a fixed answer to the
+    sanity question, otherwise varied words."""
+    last = messages[-1].get("content", "") if messages else ""
+    if isinstance(last, list):
+        last = " ".join(p.get("text", "") for p in last if p.get("type") == "text")
+    if "capital of france" in str(last).lower():
+        words = ["Paris."]
+    else:
+        words = _REPLY_WORDS
+    return [(words[i % len(words)] + " ") for i in range(n)]
+
+
+def _chunk(rid: str, delta: dict, finish: str | None = None, chat: bool = True) -> bytes:
+    if chat:
+        obj = {"id": rid, "object": "chat.completion.chunk", "model": "mock",
+               "choices": [{"index": 0, "delta": delta, "finish_reason": finish}]}
+    else:   # /v1/completions streams `text` instead of `delta`
+        obj = {"id": rid, "object": "text_completion", "model": "mock",
+               "choices": [{"index": 0, "text": delta.get("content", ""), "finish_reason": finish}]}
     return b"data: " + json.dumps(obj).encode() + b"\n\n"
 
 
@@ -214,10 +208,13 @@ def make_app(cfg: MockConfig) -> web.Application:
 
     async def chat(req: web.Request):
         body = await req.json()
+        is_chat = req.path.endswith("/chat/completions")
+        messages = messages_of(body)
         counter["n"] += 1
-        rid = f"chatcmpl-{cfg.worker_id}-{counter['n']}"
+        rid = f"{'chatcmpl' if is_chat else 'cmpl'}-{cfg.worker_id}-{counter['n']}"
         n_out = int(body.get("max_tokens") or 16)
-        job = await engine.prefill(body.get("messages", []))
+        reply = _reply_tokens(messages, n_out)
+        job = await engine.prefill(messages)
         usage = {"prompt_tokens": job.n_tokens, "completion_tokens": n_out,
                  "total_tokens": job.n_tokens + n_out,
                  "prompt_tokens_details": {"cached_tokens": job.hit_tokens,
@@ -230,20 +227,38 @@ def make_app(cfg: MockConfig) -> web.Application:
         try:
             if not body.get("stream"):
                 await asyncio.sleep(gap * n_out)
+                choice = ({"index": 0, "finish_reason": "length",
+                           "message": {"role": "assistant", "content": "".join(reply)}} if is_chat else
+                          {"index": 0, "finish_reason": "length", "text": "".join(reply)})
                 return web.json_response({
-                    "id": rid, "object": "chat.completion", "model": "mock",
-                    "choices": [{"index": 0, "finish_reason": "length",
-                                 "message": {"role": "assistant", "content": "tok " * n_out}}],
-                    "usage": usage}, headers=headers)
+                    "id": rid, "object": "chat.completion" if is_chat else "text_completion",
+                    "model": "mock", "choices": [choice], "usage": usage}, headers=headers)
             resp = web.StreamResponse(headers={**headers, "Content-Type": "text/event-stream",
                                                "Cache-Control": "no-cache"})
             await resp.prepare(req)
-            await resp.write(_chunk(rid, {"role": "assistant", "content": ""}))
-            for i in range(n_out):
-                if i:
-                    await asyncio.sleep(gap)
-                await resp.write(_chunk(rid, {"content": "tok "}))
-            await resp.write(_chunk(rid, {}, "length"))
+            so = body.get("stream_options") or {}
+            continuous = bool(so.get("include_usage") and so.get("continuous_usage_stats"))
+
+            def with_usage(chunk: bytes, done_tokens: int) -> bytes:
+                if not continuous:
+                    return chunk
+                obj = json.loads(chunk[len(b"data: "):])
+                obj["usage"] = {"prompt_tokens": job.n_tokens, "completion_tokens": done_tokens,
+                                "total_tokens": job.n_tokens + done_tokens}
+                return b"data: " + json.dumps(obj).encode() + b"\n\n"
+
+            if is_chat:
+                await resp.write(with_usage(_chunk(rid, {"role": "assistant", "content": ""}), 0))
+            k = max(1, cfg.tokens_per_chunk)
+            done = 0
+            while done < n_out:
+                step = min(k, n_out - done)
+                if done:
+                    await asyncio.sleep(gap * step)   # several tokens arrive together after k steps
+                text = "" if cfg.empty_content else "".join(reply[done:done + step])
+                done += step
+                await resp.write(with_usage(_chunk(rid, {"content": text}, chat=is_chat), done))
+            await resp.write(with_usage(_chunk(rid, {}, "length", chat=is_chat), n_out))
             if (body.get("stream_options") or {}).get("include_usage"):
                 u = {"id": rid, "object": "chat.completion.chunk", "model": "mock",
                      "choices": [], "usage": usage}
@@ -254,10 +269,36 @@ def make_app(cfg: MockConfig) -> web.Application:
         finally:
             engine.decoding -= 1
             engine.requests_done += 1
+            # like vLLM: generated tokens fill KV blocks that are cached too, so a follow-up that
+            # sends this reply back in its history can reuse it
+            engine.cache.insert(blocks_with_reply(messages, "".join(reply), cfg.block_size,
+                                                  engine._img_tokens, cfg.image_patch))
 
+    async def reset_prefix_cache(_req):
+        # like vLLM's dev endpoint: refuses while requests are running
+        if engine.prefilling or engine.decoding or engine.queue.qsize():
+            return web.json_response({"success": False})
+        engine.cache = LRUBlockCache(cfg.cache_blocks)
+        return web.json_response({"success": True})
+
+    async def reset_other_cache(_req):
+        # vLLM's /reset_mm_cache and /reset_encoder_cache: 200 with no body. The mock has no
+        # multimodal or encoder cache, so these only count calls (tests check they were made).
+        engine.other_resets += 1
+        return web.Response(status=200)
+
+    app.router.add_post("/reset_prefix_cache", reset_prefix_cache)
+    app.router.add_post("/reset_mm_cache", reset_other_cache)
+    app.router.add_post("/reset_encoder_cache", reset_other_cache)
     app.router.add_get("/health", health)
     app.router.add_get("/metrics", metrics)
+    async def models(_req):
+        return web.json_response({"object": "list", "data": [
+            {"id": "mock", "object": "model", "owned_by": "kvroute-mock"}]})
+
     app.router.add_post("/v1/chat/completions", chat)
+    app.router.add_post("/v1/completions", chat)
+    app.router.add_get("/v1/models", models)
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)
     return app

@@ -1,0 +1,762 @@
+[
+  {
+    "policy": "round_robin",
+    "active_convs": 12,
+    "trace_fingerprint": "f5c0bd0b5a5b",
+    "wall_s": 465.7,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 831344.0,
+      "prefix_queries": 1133625.0
+    },
+    "client_all": {
+      "cached_tokens": 831344,
+      "prompt_tokens": 1133625,
+      "requests": 526
+    },
+    "summary": {
+      "requests": 476,
+      "ok": 476,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7493478389611247,
+      "prompt_tokens_mean": 2163.9432773109243,
+      "recomputed_tokens_per_req": 542.3970588235294,
+      "ttft_p50_s": 0.31573003350001727,
+      "ttft_p90_s": 1.3807497110000782,
+      "ttft_p99_s": 2.298258720499973,
+      "ttft_mean_s": 0.5497982798151249,
+      "itl_p50_s": 0.02126,
+      "itl_p99_s": 0.2771568000000034,
+      "e2e_p50_s": 3.266535840499955,
+      "goodput_frac": 0.976890756302521,
+      "goodput_rps": 1.1497830137051723,
+      "throughput_rps": 1.1769821817713162,
+      "late_frac": 0.11764705882352941,
+      "per_worker": {
+        "w0": 237,
+        "w1": 239
+      },
+      "imbalance": 1.004201680672269,
+      "decision_ms_p50": 2.239,
+      "decision_ms_p99": 5.01475,
+      "prediction_exact_frac": 0.46218487394957986,
+      "prediction_mae_tokens": 25.88235294117647,
+      "prediction_bias_tokens": -25.88235294117647,
+      "prediction_share_within5pp": 1.0,
+      "estimate_ratio_median": 1.1110295152196545,
+      "estimate_ratio_n": 104,
+      "estimate_ratio_hits_median": 0.8167836843864928,
+      "ttft_p99_ci": [
+        2.017110355749992,
+        2.41878753849997
+      ],
+      "ttft_p50_ci": [
+        0.29000286300004063,
+        0.3534607080000569
+      ],
+      "goodput_ci": [
+        0.9621848739495799,
+        0.9894957983193278
+      ],
+      "routing_miss_tokens_per_req": 229.74789915966386,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "door(1,187),(166,546), green in center glass new red below every where dog old street compare near above light metal fro",
+        "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+        "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+      ]
+    }
+  },
+  {
+    "policy": "least_requests",
+    "active_convs": 12,
+    "trace_fingerprint": "f5c0bd0b5a5b",
+    "wall_s": 465.6,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 830704.0,
+      "prefix_queries": 1133625.0
+    },
+    "client_all": {
+      "cached_tokens": 830704,
+      "prompt_tokens": 1133625,
+      "requests": 526
+    },
+    "summary": {
+      "requests": 476,
+      "ok": 476,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7500157761323137,
+      "prompt_tokens_mean": 2163.9432773109243,
+      "recomputed_tokens_per_req": 540.9516806722689,
+      "ttft_p50_s": 0.299996930999896,
+      "ttft_p90_s": 1.426484706500105,
+      "ttft_p99_s": 3.1396103367499677,
+      "ttft_mean_s": 0.5941772535483177,
+      "itl_p50_s": 0.02135,
+      "itl_p99_s": 0.22939360000000095,
+      "e2e_p50_s": 3.3522148574999164,
+      "goodput_frac": 0.9558823529411765,
+      "goodput_rps": 1.1248929888143946,
+      "throughput_rps": 1.1768111267596744,
+      "late_frac": 0.1407563025210084,
+      "per_worker": {
+        "w0": 232,
+        "w1": 244
+      },
+      "imbalance": 1.0252100840336134,
+      "decision_ms_p50": 2.366,
+      "decision_ms_p99": 4.6834999999999996,
+      "prediction_exact_frac": 0.46638655462184875,
+      "prediction_mae_tokens": 25.310924369747898,
+      "prediction_bias_tokens": -25.310924369747898,
+      "prediction_share_within5pp": 1.0,
+      "estimate_ratio_median": 1.1040120912350737,
+      "estimate_ratio_n": 94,
+      "estimate_ratio_hits_median": 0.80466472303207,
+      "ttft_p99_ci": [
+        2.282441377249995,
+        3.644353016499906
+      ],
+      "ttft_p50_ci": [
+        0.2757526020000114,
+        0.3463323200001014
+      ],
+      "goodput_ci": [
+        0.936922268907563,
+        0.9726890756302521
+      ],
+      "routing_miss_tokens_per_req": 227.7310924369748,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "door(1,187),(166,546), green in center glass new red below every where dog old street compare near above light metal fro",
+        "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+        "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+      ]
+    }
+  },
+  {
+    "policy": "least_loaded",
+    "active_convs": 12,
+    "trace_fingerprint": "f5c0bd0b5a5b",
+    "wall_s": 465.7,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 828848.0,
+      "prefix_queries": 1133625.0
+    },
+    "client_all": {
+      "cached_tokens": 828848,
+      "prompt_tokens": 1133625,
+      "requests": 526
+    },
+    "summary": {
+      "requests": 476,
+      "ok": 476,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7447499458757306,
+      "prompt_tokens_mean": 2163.9432773109243,
+      "recomputed_tokens_per_req": 552.3466386554621,
+      "ttft_p50_s": 0.3023615265000217,
+      "ttft_p90_s": 1.326117800499901,
+      "ttft_p99_s": 2.2904185830000188,
+      "ttft_mean_s": 0.5385688009369659,
+      "itl_p50_s": 0.02149,
+      "itl_p99_s": 0.3007128999999991,
+      "e2e_p50_s": 3.4488635454999894,
+      "goodput_frac": 0.9705882352941176,
+      "goodput_rps": 1.1421036276693255,
+      "throughput_rps": 1.1767128285077897,
+      "late_frac": 0.1323529411764706,
+      "per_worker": {
+        "w0": 229,
+        "w1": 247
+      },
+      "imbalance": 1.0378151260504203,
+      "decision_ms_p50": 2.4655,
+      "decision_ms_p99": 4.58025,
+      "prediction_exact_frac": 0.4495798319327731,
+      "prediction_mae_tokens": 25.613445378151262,
+      "prediction_bias_tokens": -25.613445378151262,
+      "prediction_share_within5pp": 1.0,
+      "estimate_ratio_median": 1.1668027922103696,
+      "estimate_ratio_n": 106,
+      "estimate_ratio_hits_median": 0.8060050342626934,
+      "ttft_p99_ci": [
+        2.033920815749923,
+        2.4830508259999533
+      ],
+      "ttft_p50_ci": [
+        0.2802751190000663,
+        0.3318678885998452
+      ],
+      "goodput_ci": [
+        0.9558823529411765,
+        0.9852941176470589
+      ],
+      "routing_miss_tokens_per_req": 239.42857142857142,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "door(1,0),(999,999), green in center glass new red below every where dog old street compare near above light metal from ",
+        "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+        "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+      ]
+    }
+  },
+  {
+    "policy": "session_affinity",
+    "active_convs": 12,
+    "trace_fingerprint": "f5c0bd0b5a5b",
+    "wall_s": 465.3,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 952288.0,
+      "prefix_queries": 1133625.0
+    },
+    "client_all": {
+      "cached_tokens": 952288,
+      "prompt_tokens": 1133625,
+      "requests": 526
+    },
+    "summary": {
+      "requests": 476,
+      "ok": 476,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.8514490256175263,
+      "prompt_tokens_mean": 2163.9432773109243,
+      "recomputed_tokens_per_req": 321.45588235294116,
+      "ttft_p50_s": 0.2346487590000379,
+      "ttft_p90_s": 0.957483854999964,
+      "ttft_p99_s": 1.9287521817498146,
+      "ttft_mean_s": 0.3830422754684737,
+      "itl_p50_s": 0.0212,
+      "itl_p99_s": 0.17248259999999993,
+      "e2e_p50_s": 2.965703766499928,
+      "goodput_frac": 0.9957983193277311,
+      "goodput_rps": 1.1728542706543545,
+      "throughput_rps": 1.1778030228512084,
+      "late_frac": 0.09663865546218488,
+      "per_worker": {
+        "w0": 227,
+        "w1": 249
+      },
+      "imbalance": 1.046218487394958,
+      "decision_ms_p50": 2.3875,
+      "decision_ms_p99": 4.842,
+      "prediction_exact_frac": 0.31092436974789917,
+      "prediction_mae_tokens": 32.134453781512605,
+      "prediction_bias_tokens": -32.134453781512605,
+      "prediction_share_within5pp": 1.0,
+      "estimate_ratio_median": 1.1180548182668697,
+      "estimate_ratio_n": 58,
+      "estimate_ratio_hits_median": 0.783480825958702,
+      "ttft_p99_ci": [
+        1.6875295459999506,
+        1.9934585290000086
+      ],
+      "ttft_p50_ci": [
+        0.22761313099999825,
+        0.244895727499852
+      ],
+      "goodput_ci": [
+        0.9894957983193278,
+        1.0
+      ],
+      "routing_miss_tokens_per_req": 15.058823529411764,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "door(1,187),(166,546), green in center glass new red below every where dog old street compare near above light metal fro",
+        "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+        "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+      ]
+    }
+  },
+  {
+    "policy": "cache_aware",
+    "active_convs": 12,
+    "trace_fingerprint": "f5c0bd0b5a5b",
+    "wall_s": 465.3,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 956688.0,
+      "prefix_queries": 1133625.0
+    },
+    "client_all": {
+      "cached_tokens": 956688,
+      "prompt_tokens": 1133625,
+      "requests": 526
+    },
+    "summary": {
+      "requests": 476,
+      "ok": 476,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.8553479146865598,
+      "prompt_tokens_mean": 2163.9432773109243,
+      "recomputed_tokens_per_req": 313.0189075630252,
+      "ttft_p50_s": 0.23787661799997295,
+      "ttft_p90_s": 0.8643463665000581,
+      "ttft_p99_s": 1.681353279250061,
+      "ttft_mean_s": 0.3645616386050397,
+      "itl_p50_s": 0.02143,
+      "itl_p99_s": 0.18175979999999994,
+      "e2e_p50_s": 2.995703598999853,
+      "goodput_frac": 0.9978991596638656,
+      "goodput_rps": 1.1751896992878883,
+      "throughput_rps": 1.1776637828653365,
+      "late_frac": 0.10084033613445378,
+      "per_worker": {
+        "w0": 189,
+        "w1": 287
+      },
+      "imbalance": 1.2058823529411764,
+      "decision_ms_p50": 2.423,
+      "decision_ms_p99": 4.322,
+      "prediction_exact_frac": 0.31512605042016806,
+      "prediction_mae_tokens": 31.96638655462185,
+      "prediction_bias_tokens": -31.96638655462185,
+      "prediction_share_within5pp": 1.0,
+      "estimate_ratio_median": 1.1142607622869745,
+      "estimate_ratio_n": 58,
+      "estimate_ratio_hits_median": 0.7782307231416903,
+      "ttft_p99_ci": [
+        1.541092228000025,
+        1.8498051779999969
+      ],
+      "ttft_p50_ci": [
+        0.22781413500024428,
+        0.2447879935000401
+      ],
+      "goodput_ci": [
+        0.9936974789915967,
+        1.0
+      ],
+      "routing_miss_tokens_per_req": 6.453781512605042,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "door(1,187),(166,546), green in center glass new red below every where dog old street compare near above light metal fro",
+        "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+        "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+      ]
+    }
+  },
+  {
+    "policy": "round_robin",
+    "active_convs": 24,
+    "trace_fingerprint": "dce6c061d7ae",
+    "wall_s": 526.4,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 1506208.0,
+      "prefix_queries": 2040406.0
+    },
+    "client_all": {
+      "cached_tokens": 1506208,
+      "prompt_tokens": 2040406,
+      "requests": 990
+    },
+    "summary": {
+      "requests": 895,
+      "ok": 895,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7528452199278106,
+      "prompt_tokens_mean": 2066.8793296089384,
+      "recomputed_tokens_per_req": 510.8391061452514,
+      "ttft_p50_s": 0.41039517399985925,
+      "ttft_p90_s": 1.733780622199902,
+      "ttft_p99_s": 3.1133153885400033,
+      "ttft_mean_s": 0.7351365407486028,
+      "itl_p50_s": 0.02956,
+      "itl_p99_s": 0.7662720000000002,
+      "e2e_p50_s": 5.96534450199988,
+      "goodput_frac": 0.8279329608938547,
+      "goodput_rps": 1.5927006111772037,
+      "throughput_rps": 1.923707215929281,
+      "late_frac": 0.3474860335195531,
+      "per_worker": {
+        "w0": 448,
+        "w1": 447
+      },
+      "imbalance": 1.0011173184357542,
+      "decision_ms_p50": 2.268,
+      "decision_ms_p99": 4.802539999999999,
+      "prediction_exact_frac": 0.4759776536312849,
+      "prediction_mae_tokens": 29.425698324022346,
+      "prediction_bias_tokens": -20.558659217877096,
+      "prediction_share_within5pp": 0.9888268156424581,
+      "estimate_ratio_median": 1.0363101057459172,
+      "estimate_ratio_n": 154,
+      "estimate_ratio_hits_median": 0.7362210330386226,
+      "ttft_p99_ci": [
+        2.8802624510003625,
+        3.45558842499986
+      ],
+      "ttft_p50_ci": [
+        0.38285513332475607,
+        0.4674689280000166
+      ],
+      "goodput_ci": [
+        0.8022346368715084,
+        0.8536312849162011
+      ],
+      "routing_miss_tokens_per_req": 213.82793296089386,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+        "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+        "the background includes on second features new and few each seems features shadow left table black appears is a is becau"
+      ]
+    }
+  },
+  {
+    "policy": "least_requests",
+    "active_convs": 24,
+    "trace_fingerprint": "dce6c061d7ae",
+    "wall_s": 526.4,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 1523392.0,
+      "prefix_queries": 2040406.0
+    },
+    "client_all": {
+      "cached_tokens": 1523392,
+      "prompt_tokens": 2040406,
+      "requests": 990
+    },
+    "summary": {
+      "requests": 895,
+      "ok": 895,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.7581731993337864,
+      "prompt_tokens_mean": 2066.8793296089384,
+      "recomputed_tokens_per_req": 499.8268156424581,
+      "ttft_p50_s": 0.3993697930000053,
+      "ttft_p90_s": 1.6449426289997064,
+      "ttft_p99_s": 2.7621149878398072,
+      "ttft_mean_s": 0.6960944107944161,
+      "itl_p50_s": 0.02913,
+      "itl_p99_s": 0.6630001000000004,
+      "e2e_p50_s": 5.864224065000144,
+      "goodput_frac": 0.8636871508379889,
+      "goodput_rps": 1.6616061712813806,
+      "throughput_rps": 1.9238519059467472,
+      "late_frac": 0.311731843575419,
+      "per_worker": {
+        "w0": 457,
+        "w1": 438
+      },
+      "imbalance": 1.0212290502793295,
+      "decision_ms_p50": 2.361,
+      "decision_ms_p99": 4.896559999999998,
+      "prediction_exact_frac": 0.46033519553072627,
+      "prediction_mae_tokens": 30.92737430167598,
+      "prediction_bias_tokens": -22.63240223463687,
+      "prediction_share_within5pp": 0.9888268156424581,
+      "estimate_ratio_median": 1.0318952492865536,
+      "estimate_ratio_n": 153,
+      "estimate_ratio_hits_median": 0.7377279102384292,
+      "ttft_p99_ci": [
+        2.5987759088485283,
+        3.121550525999737
+      ],
+      "ttft_p50_ci": [
+        0.36992875900023137,
+        0.4291567769996618
+      ],
+      "goodput_ci": [
+        0.8424301675977653,
+        0.8849162011173184
+      ],
+      "routing_miss_tokens_per_req": 203.74525139664806,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+        "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+        "the background includes on second features new and few each seems features shadow left table black appears is a is becau"
+      ]
+    }
+  },
+  {
+    "policy": "least_loaded",
+    "active_convs": 24,
+    "trace_fingerprint": "dce6c061d7ae",
+    "wall_s": 526.2,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 1517424.0,
+      "prefix_queries": 2037167.0
+    },
+    "client_all": {
+      "cached_tokens": 1517424,
+      "prompt_tokens": 2037167,
+      "requests": 990
+    },
+    "summary": {
+      "requests": 895,
+      "ok": 894,
+      "errors": 1,
+      "missing_ttft": 0,
+      "hit_rate": 0.7598842857591553,
+      "prompt_tokens_mean": 2065.5682326621923,
+      "recomputed_tokens_per_req": 495.97539149888144,
+      "ttft_p50_s": 0.3488453719996869,
+      "ttft_p90_s": 1.4725042461001978,
+      "ttft_p99_s": 2.7755699763802157,
+      "ttft_mean_s": 0.6409696944373439,
+      "itl_p50_s": 0.02975,
+      "itl_p99_s": 0.6606886000000003,
+      "e2e_p50_s": 6.004501141999754,
+      "goodput_frac": 0.8837988826815643,
+      "goodput_rps": 1.70070787133285,
+      "throughput_rps": 1.9221654070437015,
+      "late_frac": 0.31543624161073824,
+      "per_worker": {
+        "w0": 436,
+        "w1": 458
+      },
+      "imbalance": 1.0246085011185682,
+      "decision_ms_p50": 2.343,
+      "decision_ms_p99": 4.849439999999999,
+      "prediction_exact_frac": 0.4664429530201342,
+      "prediction_mae_tokens": 28.384787472035793,
+      "prediction_bias_tokens": -22.94407158836689,
+      "prediction_share_within5pp": 0.9910514541387024,
+      "estimate_ratio_median": 1.033743842364532,
+      "estimate_ratio_n": 163,
+      "estimate_ratio_hits_median": 0.7430558390053716,
+      "ttft_p99_ci": [
+        2.506369036399875,
+        2.916031851000298
+      ],
+      "ttft_p50_ci": [
+        0.3224598144997799,
+        0.38953620346308065
+      ],
+      "goodput_ci": [
+        0.8625698324022346,
+        0.9039106145251397
+      ],
+      "routing_miss_tokens_per_req": 201.13519553072626,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+        "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+        "why this door is left pair at door is photo or new chair above includes scene was of similar pair few door and why blue "
+      ]
+    }
+  },
+  {
+    "policy": "session_affinity",
+    "active_convs": 24,
+    "trace_fingerprint": "dce6c061d7ae",
+    "wall_s": 526.3,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 1722240.0,
+      "prefix_queries": 2040406.0
+    },
+    "client_all": {
+      "cached_tokens": 1722240,
+      "prompt_tokens": 2040406,
+      "requests": 990
+    },
+    "summary": {
+      "requests": 895,
+      "ok": 895,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.8557807441331952,
+      "prompt_tokens_mean": 2066.8793296089384,
+      "recomputed_tokens_per_req": 298.08379888268155,
+      "ttft_p50_s": 0.25609427400013374,
+      "ttft_p90_s": 1.0209604214001957,
+      "ttft_p99_s": 1.7709464816201204,
+      "ttft_mean_s": 0.40723831898769947,
+      "itl_p50_s": 0.02601,
+      "itl_p99_s": 0.3275811,
+      "e2e_p50_s": 4.053595624000081,
+      "goodput_frac": 0.9921787709497206,
+      "goodput_rps": 1.909130208409598,
+      "throughput_rps": 1.9241796582506647,
+      "late_frac": 0.20446927374301677,
+      "per_worker": {
+        "w0": 429,
+        "w1": 466
+      },
+      "imbalance": 1.041340782122905,
+      "decision_ms_p50": 2.36,
+      "decision_ms_p99": 4.7554799999999915,
+      "prediction_exact_frac": 0.3396648044692737,
+      "prediction_mae_tokens": 31.21340782122905,
+      "prediction_bias_tokens": -31.21340782122905,
+      "prediction_share_within5pp": 1.0,
+      "estimate_ratio_median": 1.0800196769697465,
+      "estimate_ratio_n": 97,
+      "estimate_ratio_hits_median": 0.7484787018255579,
+      "ttft_p99_ci": [
+        1.5585870365394459,
+        1.8669201339998835
+      ],
+      "ttft_p50_ci": [
+        0.2442844500001229,
+        0.263905392000197
+      ],
+      "goodput_ci": [
+        0.9865921787709497,
+        0.9977653631284916
+      ],
+      "routing_miss_tokens_per_req": 12.156424581005586,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+        "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+        "the background includes on second features new and few each seems features shadow left table black appears is a is becau"
+      ]
+    }
+  },
+  {
+    "policy": "cache_aware",
+    "active_convs": 24,
+    "trace_fingerprint": "dce6c061d7ae",
+    "wall_s": 526.3,
+    "reset_ok": [
+      true,
+      true
+    ],
+    "router_capacity_blocks": [
+      12636,
+      12636
+    ],
+    "server": {
+      "prefix_hits": 1716912.0,
+      "prefix_queries": 2040406.0
+    },
+    "client_all": {
+      "cached_tokens": 1716912,
+      "prompt_tokens": 2040406,
+      "requests": 990
+    },
+    "summary": {
+      "requests": 895,
+      "ok": 895,
+      "errors": 0,
+      "missing_ttft": 0,
+      "hit_rate": 0.8523729131495029,
+      "prompt_tokens_mean": 2066.8793296089384,
+      "recomputed_tokens_per_req": 305.12737430167596,
+      "ttft_p50_s": 0.2493808600002012,
+      "ttft_p90_s": 0.9263501248004105,
+      "ttft_p99_s": 1.6859951878807804,
+      "ttft_mean_s": 0.38933368556311876,
+      "itl_p50_s": 0.02597,
+      "itl_p99_s": 0.32277549999999916,
+      "e2e_p50_s": 4.018117237999832,
+      "goodput_frac": 0.9899441340782122,
+      "goodput_rps": 1.904912094071916,
+      "throughput_rps": 1.9242622169236623,
+      "late_frac": 0.18324022346368715,
+      "per_worker": {
+        "w0": 420,
+        "w1": 475
+      },
+      "imbalance": 1.0614525139664805,
+      "decision_ms_p50": 2.334,
+      "decision_ms_p99": 4.858379999999996,
+      "prediction_exact_frac": 0.35307262569832404,
+      "prediction_mae_tokens": 30.694972067039107,
+      "prediction_bias_tokens": -30.694972067039107,
+      "prediction_share_within5pp": 1.0,
+      "estimate_ratio_median": 1.0962148569544068,
+      "estimate_ratio_n": 104,
+      "estimate_ratio_hits_median": 0.753315649867374,
+      "ttft_p99_ci": [
+        1.5331935105396357,
+        1.9589049239993983
+      ],
+      "ttft_p50_ci": [
+        0.2373873160004223,
+        0.2574801250002565
+      ],
+      "goodput_ci": [
+        0.982122905027933,
+        0.9955307262569832
+      ],
+      "routing_miss_tokens_per_req": 18.681564245810055,
+      "wrong_output_len": 0,
+      "sample_outputs": [
+        "skiing(221,58),(574,899)(343,221),(666,630)(174,54),(574,899)(419,2),(984,984)(174,54),(574,899)(174,54),(574,899)(174,5",
+        "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+        "the background includes on second features new and few each seems features shadow left table black appears is a is becau"
+      ]
+    }
+  }
+]

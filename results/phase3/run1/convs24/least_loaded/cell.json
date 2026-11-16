@@ -1,0 +1,59 @@
+{
+  "policy": "least_loaded",
+  "active_convs": 24,
+  "trace_fingerprint": "dce6c061d7ae",
+  "wall_s": 526.4,
+  "reset_ok": [
+    true,
+    true
+  ],
+  "router_capacity_blocks": [
+    12636,
+    12636
+  ],
+  "server": {
+    "prefix_hits": 1516128.0,
+    "prefix_queries": 2040406.0
+  },
+  "client_all": {
+    "cached_tokens": 1516128,
+    "prompt_tokens": 2040406,
+    "requests": 990
+  },
+  "summary": {
+    "requests": 895,
+    "ok": 895,
+    "errors": 0,
+    "missing_ttft": 0,
+    "hit_rate": 0.7575763964457793,
+    "prompt_tokens_mean": 2066.8793296089384,
+    "recomputed_tokens_per_req": 501.06033519553074,
+    "ttft_p50_s": 0.38951856899984705,
+    "ttft_p90_s": 1.607919254199988,
+    "ttft_p99_s": 2.961433406180093,
+    "ttft_mean_s": 0.6736282918860321,
+    "itl_p50_s": 0.03172,
+    "itl_p99_s": 0.6715226999999999,
+    "e2e_p50_s": 6.332186643000568,
+    "goodput_frac": 0.8357541899441341,
+    "goodput_rps": 1.6075919250270452,
+    "throughput_rps": 1.9235224236620394,
+    "late_frac": 0.33519553072625696,
+    "per_worker": {
+      "w0": 441,
+      "w1": 454
+    },
+    "imbalance": 1.0145251396648045,
+    "decision_ms_p50": 2.439,
+    "decision_ms_p99": 5.171379999999998,
+    "prediction_exact_frac": 0.47374301675977654,
+    "prediction_mae_tokens": 30.60558659217877,
+    "routing_miss_tokens_per_req": 205.6581005586592,
+    "wrong_output_len": 0,
+    "sample_outputs": [
+      "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+      "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+      "table scene large old left mood detail light third on dog background in water every with sky below new above looks or or"
+    ]
+  }
+}

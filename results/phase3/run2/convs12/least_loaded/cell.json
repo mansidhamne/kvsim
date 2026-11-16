@@ -1,0 +1,76 @@
+{
+  "policy": "least_loaded",
+  "active_convs": 12,
+  "trace_fingerprint": "f5c0bd0b5a5b",
+  "wall_s": 465.7,
+  "reset_ok": [
+    true,
+    true
+  ],
+  "router_capacity_blocks": [
+    12636,
+    12636
+  ],
+  "server": {
+    "prefix_hits": 828848.0,
+    "prefix_queries": 1133625.0
+  },
+  "client_all": {
+    "cached_tokens": 828848,
+    "prompt_tokens": 1133625,
+    "requests": 526
+  },
+  "summary": {
+    "requests": 476,
+    "ok": 476,
+    "errors": 0,
+    "missing_ttft": 0,
+    "hit_rate": 0.7447499458757306,
+    "prompt_tokens_mean": 2163.9432773109243,
+    "recomputed_tokens_per_req": 552.3466386554621,
+    "ttft_p50_s": 0.3023615265000217,
+    "ttft_p90_s": 1.326117800499901,
+    "ttft_p99_s": 2.2904185830000188,
+    "ttft_mean_s": 0.5385688009369659,
+    "itl_p50_s": 0.02149,
+    "itl_p99_s": 0.3007128999999991,
+    "e2e_p50_s": 3.4488635454999894,
+    "goodput_frac": 0.9705882352941176,
+    "goodput_rps": 1.1421036276693255,
+    "throughput_rps": 1.1767128285077897,
+    "late_frac": 0.1323529411764706,
+    "per_worker": {
+      "w0": 229,
+      "w1": 247
+    },
+    "imbalance": 1.0378151260504203,
+    "decision_ms_p50": 2.4655,
+    "decision_ms_p99": 4.58025,
+    "prediction_exact_frac": 0.4495798319327731,
+    "prediction_mae_tokens": 25.613445378151262,
+    "prediction_bias_tokens": -25.613445378151262,
+    "prediction_share_within5pp": 1.0,
+    "estimate_ratio_median": 1.1668027922103696,
+    "estimate_ratio_n": 106,
+    "estimate_ratio_hits_median": 0.8060050342626934,
+    "ttft_p99_ci": [
+      2.033920815749923,
+      2.4830508259999533
+    ],
+    "ttft_p50_ci": [
+      0.2802751190000663,
+      0.3318678885998452
+    ],
+    "goodput_ci": [
+      0.9558823529411765,
+      0.9852941176470589
+    ],
+    "routing_miss_tokens_per_req": 239.42857142857142,
+    "wrong_output_len": 0,
+    "sample_outputs": [
+      "door(1,0),(999,999), green in center glass new red below every where dog old street compare near above light metal from ",
+      "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+      "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+    ]
+  }
+}

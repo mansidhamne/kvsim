@@ -1,0 +1,76 @@
+{
+  "policy": "session_affinity",
+  "active_convs": 24,
+  "trace_fingerprint": "dce6c061d7ae",
+  "wall_s": 526.3,
+  "reset_ok": [
+    true,
+    true
+  ],
+  "router_capacity_blocks": [
+    12636,
+    12636
+  ],
+  "server": {
+    "prefix_hits": 1722240.0,
+    "prefix_queries": 2040406.0
+  },
+  "client_all": {
+    "cached_tokens": 1722240,
+    "prompt_tokens": 2040406,
+    "requests": 990
+  },
+  "summary": {
+    "requests": 895,
+    "ok": 895,
+    "errors": 0,
+    "missing_ttft": 0,
+    "hit_rate": 0.8557807441331952,
+    "prompt_tokens_mean": 2066.8793296089384,
+    "recomputed_tokens_per_req": 298.08379888268155,
+    "ttft_p50_s": 0.25609427400013374,
+    "ttft_p90_s": 1.0209604214001957,
+    "ttft_p99_s": 1.7709464816201204,
+    "ttft_mean_s": 0.40723831898769947,
+    "itl_p50_s": 0.02601,
+    "itl_p99_s": 0.3275811,
+    "e2e_p50_s": 4.053595624000081,
+    "goodput_frac": 0.9921787709497206,
+    "goodput_rps": 1.909130208409598,
+    "throughput_rps": 1.9241796582506647,
+    "late_frac": 0.20446927374301677,
+    "per_worker": {
+      "w0": 429,
+      "w1": 466
+    },
+    "imbalance": 1.041340782122905,
+    "decision_ms_p50": 2.36,
+    "decision_ms_p99": 4.7554799999999915,
+    "prediction_exact_frac": 0.3396648044692737,
+    "prediction_mae_tokens": 31.21340782122905,
+    "prediction_bias_tokens": -31.21340782122905,
+    "prediction_share_within5pp": 1.0,
+    "estimate_ratio_median": 1.0800196769697465,
+    "estimate_ratio_n": 97,
+    "estimate_ratio_hits_median": 0.7484787018255579,
+    "ttft_p99_ci": [
+      1.5585870365394459,
+      1.8669201339998835
+    ],
+    "ttft_p50_ci": [
+      0.2442844500001229,
+      0.263905392000197
+    ],
+    "goodput_ci": [
+      0.9865921787709497,
+      0.9977653631284916
+    ],
+    "routing_miss_tokens_per_req": 12.156424581005586,
+    "wrong_output_len": 0,
+    "sample_outputs": [
+      "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+      "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+      "the background includes on second features new and few each seems features shadow left table black appears is a is becau"
+    ]
+  }
+}

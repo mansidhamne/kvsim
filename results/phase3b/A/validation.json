@@ -1,0 +1,814 @@
+{
+  "ok": true,
+  "counts": {
+    "PASS": 134,
+    "WARN": 0,
+    "FAIL": 0
+  },
+  "checks": [
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['2217fd7977d0']"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['11216db5e3f1']"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['82ccbcedbc89']"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['2217fd7977d0']"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['11216db5e3f1']"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['82ccbcedbc89']"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "426 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 74848 vs client 74848"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / round_robin: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.76 over 311 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "426 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 81552 vs client 81552"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / least_requests: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.76 over 277 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "426 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 127568 vs client 127568"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / session_affinity: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.77 over 293 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "426 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 125856 vs client 125856"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "PASS",
+      "detail": "94% of requests within 5 points of the engine's cached share; bias -14 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=0 convs / cache_aware: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.77 over 299 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "486 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 71776 vs client 71776"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / least_requests: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.77 over 295 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "486 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 108304 vs client 108304"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / session_affinity: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.77 over 327 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "486 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 96512 vs client 96512"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "PASS",
+      "detail": "95% of requests within 5 points of the engine's cached share; bias -7 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / cache_aware: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.77 over 339 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "486 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 63104 vs client 63104"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=1 convs / round_robin: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.77 over 348 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "511 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 111008 vs client 111008"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / session_affinity: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.75 over 347 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "511 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 107504 vs client 107504"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "PASS",
+      "detail": "94% of requests within 5 points of the engine's cached share; bias -12 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / cache_aware: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.75 over 349 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "511 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 70880 vs client 70880"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / round_robin: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.75 over 363 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "511 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 70192 vs client 70192"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=full load=1.2 seed=2 convs / least_requests: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.73 over 310 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "426 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 70896 vs client 70896"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / round_robin: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.76 over 321 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "426 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 67312 vs client 67312"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / least_requests: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.74 over 280 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "426 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 117296 vs client 117296"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / session_affinity: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.76 over 297 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "426 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 112848 vs client 112848"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "PASS",
+      "detail": "94% of requests within 5 points of the engine's cached share; bias +3 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 convs / cache_aware: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.76 over 305 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "486 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 52720 vs client 52720"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / least_requests: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.76 over 321 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "486 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 97440 vs client 97440"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / session_affinity: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.76 over 339 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "486 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 92960 vs client 92960"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "PASS",
+      "detail": "94% of requests within 5 points of the engine's cached share; bias +5 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / cache_aware: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.77 over 350 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "486 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 52704 vs client 52704"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 convs / round_robin: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.76 over 352 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "511 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 96752 vs client 96752"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / session_affinity: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.74 over 355 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "511 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 93472 vs client 93472"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "PASS",
+      "detail": "93% of requests within 5 points of the engine's cached share; bias +0 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / cache_aware: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.73 over 359 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "511 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 49296 vs client 49296"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / round_robin: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.74 over 361 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "511 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 60272 vs client 60272"
+    },
+    {
+      "step": "phase3",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 convs / least_requests: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.71 over 298 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=0 / round_robin: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=0 / least_requests: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=0 / session_affinity: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=0 / cache_aware: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=1 / least_requests: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=1 / session_affinity: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=1 / cache_aware: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=1 / round_robin: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=2 / session_affinity: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=2 / cache_aware: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=2 / round_robin: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2 seed=2 / least_requests: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 / round_robin: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 / least_requests: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 / session_affinity: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=0 / cache_aware: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 / least_requests: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 / session_affinity: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 / cache_aware: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=1 / round_robin: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 / session_affinity: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 / cache_aware: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 / round_robin: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2 seed=2 / least_requests: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=full load=1.2: policy order rotated across seeds",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "step": "phase3b",
+      "name": "visionarena cache=x0.25 load=1.2: policy order rotated across seeds",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}

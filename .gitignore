@@ -13,3 +13,8 @@ calibration/results/*.log
 # mock-worker runs from bench/ (regenerated in seconds)
 results/**/mock_*.jsonl
 results/phase2_mock/
+results/phase3_mock/
+
+# VisionArena data must never be committed (terms forbid redistribution)
+**/va_data/
+results/**/traces/

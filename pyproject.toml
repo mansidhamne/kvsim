@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "kvsim"
 version = "0.1.0"
-description = "Mini KV-cache-aware router simulator for multi-turn VLM serving"
+description = "KV-cache-aware routing for multimodal LLM serving on vLLM: router, simulator, real-traffic benchmarks"
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.24", "matplotlib>=3.7"]
 
@@ -13,6 +13,8 @@ dependencies = ["numpy>=1.24", "matplotlib>=3.7"]
 dev = ["pytest>=7"]
 # router service + benchmark client/mock (Phases 1-4); runs on a laptop, no GPU needed
 router = ["aiohttp>=3.9", "pyzmq>=25", "msgspec>=0.18", "pillow>=10"]
+# real-traffic traces (VisionArena parquet from Hugging Face)
+traces = ["pyarrow>=14", "huggingface_hub>=0.20"]
 
 [tool.setuptools.packages.find]
 include = ["kvsim*", "router*", "bench*", "deploy*"]

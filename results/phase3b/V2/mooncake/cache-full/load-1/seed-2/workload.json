@@ -1,0 +1,16 @@
+{
+  "build": {
+    "requests": 1313,
+    "cut_to_max_hashes": 17,
+    "rate_per_s": 3.647222222222222
+  },
+  "stats": {
+    "requests": 1313,
+    "prompt_tokens_est": 882850,
+    "reuse_ceiling": 0.21171433425836778,
+    "peak_live_blocks": 43332,
+    "peak_live_tokens": 693312
+  },
+  "fingerprint": "c31c33573827",
+  "source": "mooncake"
+}

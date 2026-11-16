@@ -1,0 +1,59 @@
+{
+  "policy": "session_affinity",
+  "active_convs": 12,
+  "trace_fingerprint": "f5c0bd0b5a5b",
+  "wall_s": 465.3,
+  "reset_ok": [
+    true,
+    true
+  ],
+  "router_capacity_blocks": [
+    12636,
+    12636
+  ],
+  "server": {
+    "prefix_hits": 952800.0,
+    "prefix_queries": 1133625.0
+  },
+  "client_all": {
+    "cached_tokens": 952800,
+    "prompt_tokens": 1133625,
+    "requests": 526
+  },
+  "summary": {
+    "requests": 476,
+    "ok": 476,
+    "errors": 0,
+    "missing_ttft": 0,
+    "hit_rate": 0.8515732929982127,
+    "prompt_tokens_mean": 2163.9432773109243,
+    "recomputed_tokens_per_req": 321.18697478991595,
+    "ttft_p50_s": 0.24611582549982813,
+    "ttft_p90_s": 0.9813214564999271,
+    "ttft_p99_s": 1.972075568750256,
+    "ttft_mean_s": 0.39241053903781103,
+    "itl_p50_s": 0.02186,
+    "itl_p99_s": 0.18932520000000078,
+    "e2e_p50_s": 3.146945285000129,
+    "goodput_frac": 0.9894957983193278,
+    "goodput_rps": 1.1653249287728378,
+    "throughput_rps": 1.1776956817322097,
+    "late_frac": 0.10714285714285714,
+    "per_worker": {
+      "w0": 207,
+      "w1": 269
+    },
+    "imbalance": 1.1302521008403361,
+    "decision_ms_p50": 2.4555,
+    "decision_ms_p99": 4.98175,
+    "prediction_exact_frac": 0.31092436974789917,
+    "prediction_mae_tokens": 32.134453781512605,
+    "routing_miss_tokens_per_req": 14.789915966386555,
+    "wrong_output_len": 0,
+    "sample_outputs": [
+      "door(1,187),(166,546), green in center glass new red below every where dog old street compare near above light metal fro",
+      "blue door an the metal from scene blue window a blue near center appears appears many other item first small similar in ",
+      "style the each background left pattern because what each first which bottom chair between while shows texture at an wood"
+    ]
+  }
+}

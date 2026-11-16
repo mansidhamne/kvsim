@@ -54,7 +54,7 @@ class RoundRobin:
     def route(self, req, workers, now, cost):
         wid = self._next % len(workers)
         self._next += 1
-        return wid, cost.prefill_time(req.cum_weight[-1])
+        return wid, cost.request_prefill_time(req, 0)
 
 
 class LeastLoaded:
@@ -68,7 +68,7 @@ class LeastLoaded:
 
     def route(self, req, workers, now, cost):
         wid = _argmin_random_tiebreak([w.blind_wait(now) for w in workers], self.rng)
-        return wid, cost.prefill_time(req.cum_weight[-1])
+        return wid, cost.request_prefill_time(req, 0)
 
 
 class SessionAffinity:
@@ -88,7 +88,7 @@ class SessionAffinity:
         if wid is None:
             wid = _argmin_random_tiebreak([w.blind_wait(now) for w in workers], self.rng)
             self._home[req.conv_id] = wid
-        return wid, cost.prefill_time(req.cum_weight[-1])
+        return wid, cost.request_prefill_time(req, 0)
 
 
 class CacheAware:
@@ -104,7 +104,7 @@ class CacheAware:
         scores, ests = [], []
         for w in workers:
             hit = w.match_len(req.blocks, include_pending=self.pending_aware)
-            est = cost.prefill_time(req.uncached_weight(hit), hit)
+            est = cost.request_prefill_time(req, hit)
             ests.append(est)
             scores.append(w.est_wait(now) + self.alpha * est)
         wid = _argmin_random_tiebreak(scores, self.rng)

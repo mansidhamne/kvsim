@@ -1,0 +1,124 @@
+{
+  "cost_model": {
+    "block_size": 16,
+    "prefill_tokens_per_s": 10797.328117724332,
+    "image_cost_multiplier": 5.7988929762087915,
+    "fixed_overhead_s": 0.03962136326403367,
+    "attn_s_per_token_pair": 3.210814915720841e-07
+  },
+  "fit": {
+    "n": 66,
+    "r2": 0.9990190397132832,
+    "overhead_s": 0.03962136326403367,
+    "s_per_text_token": 9.26155053451096e-05,
+    "s_per_image_token": 0.0005370674034337838,
+    "attn_s_per_token_pair": 3.210814915720841e-07,
+    "linear_only": {
+      "r2": 0.9544400297456495,
+      "tokens_per_s": 1355.937299494555,
+      "overhead_s": -0.10375821347215326
+    }
+  },
+  "image_tokens_per_image": {
+    "448x448": [
+      256
+    ],
+    "672x448": [
+      384
+    ]
+  },
+  "hits": {
+    "hits_text.cold": {
+      "ttft_mean_s": 1.7975022808332142,
+      "cached_frac": 0.0
+    },
+    "hits_text.new_question": {
+      "ttft_mean_s": 0.0717357708332808,
+      "cached_frac": 0.9917734838339392
+    },
+    "hits_text.identical": {
+      "ttft_mean_s": 0.05366091000003811,
+      "cached_frac": 0.997895542376124
+    },
+    "hits_image.cold": {
+      "ttft_mean_s": 1.2740554130000419,
+      "cached_frac": 0.0
+    },
+    "hits_image.new_question": {
+      "ttft_mean_s": 0.06004119933337885,
+      "cached_frac": 0.985956822469084
+    },
+    "hits_image.identical": {
+      "ttft_mean_s": 0.04674215266656271,
+      "cached_frac": 0.9960176063718298
+    }
+  },
+  "load": [
+    {
+      "concurrency": 1,
+      "req_per_s": 0.7285203815324176,
+      "output_tok_per_s": 46.62530441807473,
+      "ttft_p50_s": 0.32195724300026995,
+      "ttft_p99_s": 0.3304470699199919,
+      "itl_p50_s": 0.01668,
+      "itl_p99_s": 0.0169068
+    },
+    {
+      "concurrency": 2,
+      "req_per_s": 1.156939224113007,
+      "output_tok_per_s": 74.04411034323245,
+      "ttft_p50_s": 0.48205088099985005,
+      "ttft_p99_s": 0.6394918404600776,
+      "itl_p50_s": 0.01749,
+      "itl_p99_s": 0.0175494
+    },
+    {
+      "concurrency": 4,
+      "req_per_s": 1.6580581871290978,
+      "output_tok_per_s": 106.11572397626226,
+      "ttft_p50_s": 0.9010262085000704,
+      "ttft_p99_s": 1.2163759262497251,
+      "itl_p50_s": 0.01891,
+      "itl_p99_s": 0.01901
+    },
+    {
+      "concurrency": 8,
+      "req_per_s": 2.1060840810651094,
+      "output_tok_per_s": 134.789381188167,
+      "ttft_p50_s": 0.9375581494998642,
+      "ttft_p99_s": 2.3772443738500444,
+      "itl_p50_s": 0.02264,
+      "itl_p99_s": 0.022712
+    },
+    {
+      "concurrency": 16,
+      "req_per_s": 2.474031407254695,
+      "output_tok_per_s": 158.33801006430048,
+      "ttft_p50_s": 1.699545310000076,
+      "ttft_p99_s": 4.651732291700283,
+      "itl_p50_s": 0.02953,
+      "itl_p99_s": 0.0296789
+    },
+    {
+      "concurrency": 32,
+      "req_per_s": 2.713609605811122,
+      "output_tok_per_s": 173.6710147719118,
+      "ttft_p50_s": 2.037345895999806,
+      "ttft_p99_s": 9.230178795669888,
+      "itl_p50_s": 0.04602,
+      "itl_p99_s": 0.04614
+    }
+  ],
+  "env": {
+    "nvidia_smi": "Tesla T4, 15360 MiB, 580.178.04, 7.5\nTesla T4, 15360 MiB, 580.178.04, 7.5",
+    "vllm": "0.32.0",
+    "python": "3.13.16",
+    "time": "2026-11-14 04:07:15"
+  },
+  "valid": true,
+  "validation_counts": {
+    "PASS": 42,
+    "WARN": 5,
+    "FAIL": 0
+  }
+}

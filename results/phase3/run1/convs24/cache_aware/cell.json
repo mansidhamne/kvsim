@@ -1,0 +1,59 @@
+{
+  "policy": "cache_aware",
+  "active_convs": 24,
+  "trace_fingerprint": "dce6c061d7ae",
+  "wall_s": 526.5,
+  "reset_ok": [
+    true,
+    true
+  ],
+  "router_capacity_blocks": [
+    12636,
+    12636
+  ],
+  "server": {
+    "prefix_hits": 1689856.0,
+    "prefix_queries": 2040406.0
+  },
+  "client_all": {
+    "cached_tokens": 1689856,
+    "prompt_tokens": 2040406,
+    "requests": 990
+  },
+  "summary": {
+    "requests": 895,
+    "ok": 895,
+    "errors": 0,
+    "missing_ttft": 0,
+    "hit_rate": 0.8424434969838209,
+    "prompt_tokens_mean": 2066.8793296089384,
+    "recomputed_tokens_per_req": 325.65027932960896,
+    "ttft_p50_s": 0.2596206770003846,
+    "ttft_p90_s": 0.9754670501999501,
+    "ttft_p99_s": 2.389654583299669,
+    "ttft_mean_s": 0.4335658401441193,
+    "itl_p50_s": 0.02692,
+    "itl_p99_s": 0.42588199999999954,
+    "e2e_p50_s": 4.2442090569993525,
+    "goodput_frac": 0.9519553072625698,
+    "goodput_rps": 1.8310510740175152,
+    "throughput_rps": 1.9234632761099486,
+    "late_frac": 0.22905027932960895,
+    "per_worker": {
+      "w0": 475,
+      "w1": 420
+    },
+    "imbalance": 1.0614525139664805,
+    "decision_ms_p50": 2.385,
+    "decision_ms_p99": 4.770999999999997,
+    "prediction_exact_frac": 0.3675977653631285,
+    "prediction_mae_tokens": 30.534078212290503,
+    "routing_miss_tokens_per_req": 38.614525139664806,
+    "wrong_output_len": 0,
+    "sample_outputs": [
+      "skiing(221,57),(574,899)(343,221),(666,630)(174,547),(424,899)(419,2),(984,984)(17,10),(474,984)(184,307),(324,829)(419,",
+      "pair tree appears shows same was with features from scene bottom describe last above large background with for image pic",
+      "the background includes on second features new and few each seems features shadow left table black appears is a is becau"
+    ]
+  }
+}

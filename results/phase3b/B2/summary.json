@@ -1,0 +1,314 @@
+{
+  "aggregate": [
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "policy": "cache_aware",
+      "seeds": 2,
+      "hit_rate": {
+        "median": 0.20142205028884766,
+        "min": 0.16865013294261694,
+        "max": 0.23419396763507838
+      },
+      "ttft_p50_s": {
+        "median": 0.6898315675000504,
+        "min": 0.6771144809999896,
+        "max": 0.7025486540001111
+      },
+      "ttft_p99_s": {
+        "median": 2.4728450384998837,
+        "min": 2.325734537249673,
+        "max": 2.6199555397500944
+      },
+      "itl_p99_s": {
+        "median": 0.5104140000000004,
+        "min": 0.49164800000000075,
+        "max": 0.52918
+      },
+      "goodput_frac": {
+        "median": 0.9635860430070133,
+        "min": 0.960093896713615,
+        "max": 0.9670781893004116
+      },
+      "recomputed_tokens_per_req": {
+        "median": 674.1638555613516,
+        "min": 667.8065843621399,
+        "max": 680.5211267605633
+      },
+      "share_of_ceiling": 0.7948800114595329
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "policy": "least_requests",
+      "seeds": 2,
+      "hit_rate": {
+        "median": 0.10967491415710134,
+        "min": 0.08139511055554417,
+        "max": 0.1379547177586585
+      },
+      "ttft_p50_s": {
+        "median": 0.9341593779999471,
+        "min": 0.9191257319999977,
+        "max": 0.9491930239998965
+      },
+      "ttft_p99_s": {
+        "median": 4.036365497174955,
+        "min": 3.5191406773498093,
+        "max": 4.553590317000101
+      },
+      "itl_p99_s": {
+        "median": 0.5454133000000002,
+        "min": 0.5274366000000005,
+        "max": 0.56339
+      },
+      "goodput_frac": {
+        "median": 0.8901930099113198,
+        "min": 0.8544600938967136,
+        "max": 0.9259259259259259
+      },
+      "recomputed_tokens_per_req": {
+        "median": 751.9688025270967,
+        "min": 737.8930041152263,
+        "max": 766.0446009389672
+      },
+      "share_of_ceiling": 0.42910520743619385
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "policy": "round_robin",
+      "seeds": 2,
+      "hit_rate": {
+        "median": 0.10876712053877222,
+        "min": 0.08676362853937304,
+        "max": 0.13077061253817138
+      },
+      "ttft_p50_s": {
+        "median": 0.7814018085000498,
+        "min": 0.77026299750014,
+        "max": 0.7925406194999596
+      },
+      "ttft_p99_s": {
+        "median": 3.8176050880498043,
+        "min": 3.21149153809947,
+        "max": 4.423718638000139
+      },
+      "itl_p99_s": {
+        "median": 0.5785306499999998,
+        "min": 0.5458112999999998,
+        "max": 0.61125
+      },
+      "goodput_frac": {
+        "median": 0.9192459282443632,
+        "min": 0.9084507042253521,
+        "max": 0.9300411522633745
+      },
+      "recomputed_tokens_per_req": {
+        "median": 753.0034486755926,
+        "min": 733.5843621399177,
+        "max": 772.4225352112676
+      },
+      "share_of_ceiling": 0.4277012157654468
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "policy": "session_affinity",
+      "seeds": 2,
+      "hit_rate": {
+        "median": 0.2136749304144053,
+        "min": 0.1797154164371982,
+        "max": 0.2476344443916124
+      },
+      "ttft_p50_s": {
+        "median": 0.704795016999924,
+        "min": 0.7027427779999016,
+        "max": 0.7068472559999464
+      },
+      "ttft_p99_s": {
+        "median": 2.6910193666501847,
+        "min": 2.6701529192500857,
+        "max": 2.711885814050284
+      },
+      "itl_p99_s": {
+        "median": 0.5241557000000001,
+        "min": 0.5058640000000002,
+        "max": 0.5424473999999999
+      },
+      "goodput_frac": {
+        "median": 0.9536022720686257,
+        "min": 0.9483568075117371,
+        "max": 0.9588477366255144
+      },
+      "recomputed_tokens_per_req": {
+        "median": 663.7486089375761,
+        "min": 658.9197530864197,
+        "max": 668.5774647887324
+      },
+      "share_of_ceiling": 0.8435205427050174
+    }
+  ],
+  "paired": [
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "session_affinity",
+      "metric": "ttft_p99_s",
+      "seeds": 2,
+      "median": -0.0805957996251414,
+      "min": -0.14239215928633897,
+      "max": -0.018799439963943843,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "round_robin",
+      "metric": "ttft_p99_s",
+      "seeds": 2,
+      "median": -0.34177837830821445,
+      "min": -0.4077481516920082,
+      "max": -0.2758086049244207,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "session_affinity",
+      "b": "round_robin",
+      "metric": "ttft_p99_s",
+      "seeds": 2,
+      "median": -0.2759844762139143,
+      "min": -0.39640082524389475,
+      "max": -0.15556812718393387,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "least_requests",
+      "metric": "ttft_p99_s",
+      "seeds": 2,
+      "median": -0.3818791121334222,
+      "min": -0.4246396014220011,
+      "max": -0.3391186228448433,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "session_affinity",
+      "metric": "goodput_frac",
+      "seeds": 2,
+      "median": 0.010479964305443512,
+      "min": 0.008583690987124637,
+      "max": 0.012376237623762387,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "round_robin",
+      "metric": "goodput_frac",
+      "seeds": 2,
+      "median": 0.048335277034597834,
+      "min": 0.03982300884955747,
+      "max": 0.056847545219638196,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "session_affinity",
+      "b": "round_robin",
+      "metric": "goodput_frac",
+      "seeds": 2,
+      "median": 0.03745054995312247,
+      "min": 0.030973451327433565,
+      "max": 0.043927648578811374,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "least_requests",
+      "metric": "goodput_frac",
+      "seeds": 2,
+      "median": 0.08403540903540907,
+      "min": 0.04444444444444451,
+      "max": 0.12362637362637363,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "session_affinity",
+      "metric": "hit_rate",
+      "seeds": 2,
+      "median": -0.057923308008621555,
+      "min": -0.06157114238693073,
+      "max": -0.054275473630312376,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "round_robin",
+      "metric": "hit_rate",
+      "seeds": 2,
+      "median": 0.8673322515839939,
+      "min": 0.7908761233852764,
+      "max": 0.9437883797827114,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "session_affinity",
+      "b": "round_robin",
+      "metric": "hit_rate",
+      "seeds": 2,
+      "median": 0.9824885990244957,
+      "min": 0.8936551537473985,
+      "max": 1.071322044301593,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "visionarena",
+      "cache": "1638",
+      "load": 1.2,
+      "a": "cache_aware",
+      "b": "least_requests",
+      "metric": "hit_rate",
+      "seeds": 2,
+      "median": 0.8848040958949156,
+      "min": 0.6976147785303237,
+      "max": 1.0719934132595075,
+      "same_sign_all_seeds": true
+    }
+  ]
+}

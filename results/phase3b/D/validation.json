@@ -1,0 +1,292 @@
+{
+  "ok": true,
+  "counts": {
+    "PASS": 45,
+    "WARN": 2,
+    "FAIL": 0
+  },
+  "checks": [
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['2c8d71769449']"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs: every policy replayed the same trace",
+      "status": "PASS",
+      "detail": "fingerprints ['5d1e78bdea01']"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "936 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 121088 vs client 121088"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / round_robin: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.78 over 246 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "936 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 113120 vs client 113120"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / least_requests: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.77 over 228 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "936 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 106608 vs client 106608"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / session_affinity: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.83 over 238 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "936 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 161216 vs client 161216"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "WARN",
+      "detail": "86% of requests within 5 points of the engine's cached share; bias +3 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=0 convs / cache_aware: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.82 over 223 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / least_requests: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / least_requests: no failed requests",
+      "status": "PASS",
+      "detail": "1060 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / least_requests: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 121456 vs client 121456"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / least_requests: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.74 over 229 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / session_affinity: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / session_affinity: no failed requests",
+      "status": "PASS",
+      "detail": "1060 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / session_affinity: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 128176 vs client 128176"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / session_affinity: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.82 over 241 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / cache_aware: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / cache_aware: no failed requests",
+      "status": "PASS",
+      "detail": "1060 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / cache_aware: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 168224 vs client 168224"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / cache_aware: router's predicted reuse matches the engine",
+      "status": "WARN",
+      "detail": "86% of requests within 5 points of the engine's cached share; bias +2 tokens"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / cache_aware: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.82 over 229 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / round_robin: worker caches reset before the run",
+      "status": "PASS",
+      "detail": "[True, True]"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / round_robin: no failed requests",
+      "status": "PASS",
+      "detail": "1060 measured"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / round_robin: server cache hits match client",
+      "status": "PASS",
+      "detail": "server 126784 vs client 126784"
+    },
+    {
+      "step": "phase3",
+      "name": "mooncake cache=full load=1 seed=1 convs / round_robin: router's prefill estimates are realistic",
+      "status": "PASS",
+      "detail": "median estimate / measured TTFT = 0.72 over 245 mostly-uncached requests with no backlog (should be 0.5-2)"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1 seed=0 / round_robin: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1 seed=0 / least_requests: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1 seed=0 / session_affinity: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1 seed=0 / cache_aware: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1 seed=1 / least_requests: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1 seed=1 / session_affinity: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1 seed=1 / cache_aware: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1 seed=1 / round_robin: multimodal and encoder caches reset",
+      "status": "PASS",
+      "detail": "[{'prefix': True, 'mm': True, 'encoder': True}, {'prefix': True, 'mm': True, 'encoder': True}]"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1 seed=0: same prompt tokens for every policy (own replies)",
+      "status": "PASS",
+      "detail": "totals 920806-920806 (0.00%); replies identical in every policy for 85.8% of 1154 requests"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1 seed=1: same prompt tokens for every policy (own replies)",
+      "status": "PASS",
+      "detail": "totals 919100-919100 (0.00%); replies identical in every policy for 85.8% of 1300 requests"
+    },
+    {
+      "step": "phase3b",
+      "name": "mooncake cache=full load=1: policy order rotated across seeds",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}

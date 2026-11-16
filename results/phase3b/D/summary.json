@@ -1,0 +1,314 @@
+{
+  "aggregate": [
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "policy": "cache_aware",
+      "seeds": 2,
+      "hit_rate": {
+        "median": 0.20289271668510206,
+        "min": 0.19473422752111277,
+        "max": 0.21105120584909134
+      },
+      "ttft_p50_s": {
+        "median": 0.6155157612499806,
+        "min": 0.6022264799998993,
+        "max": 0.628805042500062
+      },
+      "ttft_p99_s": {
+        "median": 3.1169573712154217,
+        "min": 3.0430034078304202,
+        "max": 3.190911334600423
+      },
+      "itl_p99_s": {
+        "median": 0.5789624999999998,
+        "min": 0.5759968999999999,
+        "max": 0.5819280999999997
+      },
+      "goodput_frac": {
+        "median": 0.8708655861957748,
+        "min": 0.8688679245283019,
+        "max": 0.8728632478632479
+      },
+      "recomputed_tokens_per_req": {
+        "median": 608.587356877923,
+        "min": 566.0037735849056,
+        "max": 651.1709401709402
+      },
+      "share_of_ceiling": 0.9040741591376276
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "policy": "least_requests",
+      "seeds": 2,
+      "hit_rate": {
+        "median": 0.14126162742060885,
+        "min": 0.1342761412520743,
+        "max": 0.14824711358914341
+      },
+      "ttft_p50_s": {
+        "median": 0.7413781447498877,
+        "min": 0.7106070819995693,
+        "max": 0.7721492075002061
+      },
+      "ttft_p99_s": {
+        "median": 4.747350707600022,
+        "min": 4.616806872749694,
+        "max": 4.877894542450349
+      },
+      "itl_p99_s": {
+        "median": 0.5984740499999311,
+        "min": 0.5685718,
+        "max": 0.6283762999998623
+      },
+      "goodput_frac": {
+        "median": 0.7783583293017255,
+        "min": 0.7670940170940171,
+        "max": 0.789622641509434
+      },
+      "recomputed_tokens_per_req": {
+        "median": 655.5601032091598,
+        "min": 611.0603773584905,
+        "max": 700.0598290598291
+      },
+      "share_of_ceiling": 0.6294275849865167
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "policy": "round_robin",
+      "seeds": 2,
+      "hit_rate": {
+        "median": 0.1506072742151164,
+        "min": 0.14490915432666393,
+        "max": 0.1563053941035689
+      },
+      "ttft_p50_s": {
+        "median": 0.6832833192502221,
+        "min": 0.6825823635003871,
+        "max": 0.6839842750000571
+      },
+      "ttft_p99_s": {
+        "median": 4.309232775774953,
+        "min": 4.099154403199982,
+        "max": 4.519311148349925
+      },
+      "itl_p99_s": {
+        "median": 0.7235923999999996,
+        "min": 0.6364624999999992,
+        "max": 0.8107222999999999
+      },
+      "goodput_frac": {
+        "median": 0.7918783260764393,
+        "min": 0.7724358974358975,
+        "max": 0.8113207547169812
+      },
+      "recomputed_tokens_per_req": {
+        "median": 648.3703918722787,
+        "min": 605.2792452830189,
+        "max": 691.4615384615385
+      },
+      "share_of_ceiling": 0.6711006674370231
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "policy": "session_affinity",
+      "seeds": 2,
+      "hit_rate": {
+        "median": 0.14155900540707322,
+        "min": 0.12651805815391445,
+        "max": 0.15659995266023197
+      },
+      "ttft_p50_s": {
+        "median": 0.6716432302498561,
+        "min": 0.6460968599999433,
+        "max": 0.6971896004997689
+      },
+      "ttft_p99_s": {
+        "median": 3.42068294539009,
+        "min": 3.369720248500334,
+        "max": 3.4716456422798463
+      },
+      "itl_p99_s": {
+        "median": 0.6197452999999996,
+        "min": 0.5633598999999996,
+        "max": 0.6761306999999996
+      },
+      "goodput_frac": {
+        "median": 0.8502539912917271,
+        "min": 0.8269230769230769,
+        "max": 0.8735849056603774
+      },
+      "recomputed_tokens_per_req": {
+        "median": 655.7006289308176,
+        "min": 605.0679245283019,
+        "max": 706.3333333333334
+      },
+      "share_of_ceiling": 0.63060948836149
+    }
+  ],
+  "paired": [
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "cache_aware",
+      "b": "session_affinity",
+      "metric": "ttft_p99_s",
+      "seeds": 2,
+      "median": -0.08826644803038952,
+      "min": -0.12346946624654198,
+      "max": -0.05306342981423706,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "cache_aware",
+      "b": "round_robin",
+      "metric": "ttft_p99_s",
+      "seeds": 2,
+      "median": -0.2757947515306486,
+      "min": -0.29393856057787093,
+      "max": -0.25765094248342624,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "session_affinity",
+      "b": "round_robin",
+      "metric": "ttft_p99_s",
+      "seeds": 2,
+      "median": -0.20372776302127954,
+      "min": -0.254373036534412,
+      "max": -0.15308248950814707,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "cache_aware",
+      "b": "least_requests",
+      "metric": "ttft_p99_s",
+      "seeds": 2,
+      "median": -0.3433640987856367,
+      "min": -0.34584249273304113,
+      "max": -0.3408857048382322,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "cache_aware",
+      "b": "session_affinity",
+      "metric": "goodput_frac",
+      "seeds": 2,
+      "median": 0.02507799376049913,
+      "min": -0.005399568034557323,
+      "max": 0.05555555555555558,
+      "same_sign_all_seeds": false
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "cache_aware",
+      "b": "round_robin",
+      "metric": "goodput_frac",
+      "seeds": 2,
+      "median": 0.10047203190839193,
+      "min": 0.07093023255813935,
+      "max": 0.13001383125864452,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "session_affinity",
+      "b": "round_robin",
+      "metric": "goodput_frac",
+      "seeds": 2,
+      "median": 0.07364180256682429,
+      "min": 0.0705394190871369,
+      "max": 0.07674418604651168,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "cache_aware",
+      "b": "least_requests",
+      "metric": "goodput_frac",
+      "seeds": 2,
+      "median": 0.11912071564780702,
+      "min": 0.10035842293906816,
+      "max": 0.13788300835654588,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "cache_aware",
+      "b": "session_affinity",
+      "metric": "hit_rate",
+      "seeds": 2,
+      "median": 0.44344527178486326,
+      "min": 0.34770925702001887,
+      "max": 0.5391812865497077,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "cache_aware",
+      "b": "round_robin",
+      "metric": "hit_rate",
+      "seeds": 2,
+      "median": 0.3470428198519041,
+      "min": 0.34383661560904444,
+      "max": 0.3502490240947638,
+      "same_sign_all_seeds": true
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "session_affinity",
+      "b": "round_robin",
+      "metric": "hit_rate",
+      "seeds": 2,
+      "median": -0.06251507708421633,
+      "min": -0.12691466083150993,
+      "max": 0.0018845066630772678,
+      "same_sign_all_seeds": false
+    },
+    {
+      "workload": "mooncake",
+      "cache": "full",
+      "load": 1.0,
+      "a": "cache_aware",
+      "b": "least_requests",
+      "metric": "hit_rate",
+      "seeds": 2,
+      "median": 0.43694825511518043,
+      "min": 0.4236446210615952,
+      "max": 0.4502518891687657,
+      "same_sign_all_seeds": true
+    }
+  ]
+}

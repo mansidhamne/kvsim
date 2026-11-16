@@ -1,0 +1,87 @@
+{
+  "policy": "cache_aware",
+  "workload": "visionarena",
+  "cache": "full",
+  "load": 1.2,
+  "seed": 1,
+  "order_index": 2,
+  "reuse_ceiling": 0.22909805066993916,
+  "trace_fingerprint": "11216db5e3f1",
+  "wall_s": 463.1,
+  "resets": [
+    {
+      "prefix": true,
+      "mm": true,
+      "encoder": true
+    },
+    {
+      "prefix": true,
+      "mm": true,
+      "encoder": true
+    }
+  ],
+  "router_capacity_blocks": [
+    12636,
+    12636
+  ],
+  "router_retries": 0,
+  "server": {
+    "prefix_hits": 96512.0,
+    "prefix_queries": 469673.0,
+    "preemptions": 0.0
+  },
+  "client_all": {
+    "cached_tokens": 96512,
+    "prompt_tokens": 469673,
+    "requests": 565
+  },
+  "summary": {
+    "requests": 486,
+    "ok": 486,
+    "errors": 0,
+    "missing_ttft": 0,
+    "hit_rate": 0.216432180562034,
+    "prompt_tokens_mean": 842.5452674897119,
+    "recomputed_tokens_per_req": 660.1913580246913,
+    "ttft_p50_s": 0.6554707899995265,
+    "ttft_p90_s": 1.3885064389996842,
+    "ttft_p99_s": 2.134429557100063,
+    "ttft_mean_s": 0.7220491737242775,
+    "itl_p50_s": 0.02192,
+    "itl_p99_s": 0.4787853999999999,
+    "e2e_p50_s": 7.691561302000082,
+    "goodput_frac": 0.9794238683127572,
+    "goodput_rps": 1.186178252921518,
+    "throughput_rps": 1.211097964117348,
+    "late_frac": 0.0,
+    "per_worker": {
+      "w0": 227,
+      "w1": 259
+    },
+    "imbalance": 1.0658436213991769,
+    "decision_ms_p50": 2.5330000000000004,
+    "decision_ms_p99": 11.34254999999999,
+    "prediction_exact_frac": 0.9032921810699589,
+    "prediction_mae_tokens": 10.40329218106996,
+    "prediction_bias_tokens": -7.242798353909465,
+    "prediction_share_within5pp": 0.9506172839506173,
+    "estimate_ratio_median": 0.7735979054705802,
+    "estimate_ratio_n": 339,
+    "estimate_ratio_hits_median": 0.5863829168730885,
+    "ttft_p99_ci": [
+      1.766469294749549,
+      2.79741420504956
+    ],
+    "ttft_p50_ci": [
+      0.5811095047621165,
+      0.7055176449998726
+    ],
+    "goodput_ci": [
+      0.9670267489711935,
+      0.9917695473251029
+    ],
+    "routing_miss_tokens_per_req": 22.386831275720166,
+    "wrong_output_len": 0,
+    "multi_token_chunk_share": 0.007740066225165563
+  }
+}
