@@ -9,7 +9,7 @@
 
 Outputs in --out:
   env.json            GPU, Python, vLLM version, chosen attention backend (from the log)
-  smoke.json          answers to the open questions in docs/vllm_api.md
+  smoke.json          answers to the open questions about vLLM on a T4
   calibration_raw.json, calibration_vllm.json (fitted cost model), calibration_vllm.png
   logs/vllm_<port>.log
 """

@@ -2,7 +2,7 @@
 
 Speaks enough of vLLM's OpenAI-compatible API for the router and load generator:
   POST /v1/chat/completions   (streaming SSE and non-streaming)
-  GET  /metrics               (Prometheus text, vLLM metric names; see docs/vllm_api.md)
+  GET  /metrics               (Prometheus text, vLLM 0.32 metric names)
   GET  /health
 
 Model of the engine (deliberately simple, NOT a performance model of vLLM):

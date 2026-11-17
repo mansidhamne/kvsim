@@ -22,7 +22,8 @@ session, numbers are medians and "n/n" is how many seeds agree):
   threw away a still-cached conversation): harmful moves dropped from 4-16 to 2 per run and reuse rose
   13% under a scarce cache; its latency gain over v1 is within run-to-run noise.
 
-Full tables, per-run details and what did not hold: [docs/phase3b.md](docs/phase3b.md).
+Pooled numbers: [`results/phase3b/pooled_paired.json`](results/phase3b/pooled_paired.json); every run's per-request
+logs (sanitized), summary and validation report are under [`results/`](results/).
 
 ## How it works
 
@@ -44,7 +45,8 @@ load generator ──► router (OpenAI-compatible proxy) ──► vLLM worker 
 | cache-aware v2 | v1 x (1 + 0.02 x requests in flight), plus a switching cost when the home GPU still holds the conversation |
 
 The cost model is measured on the T4: prefill = 43 ms + n / 11,100 tok/s + a quadratic attention term
-(3.2e-7 s x n x (cached + n/2)), image tokens ~5.9x a text token ([docs/phase2.md](docs/phase2.md)).
+(3.2e-7 s x n x (cached + n/2)), image tokens ~5.9x a text token
+([`calibration/results/phase2/`](calibration/results/phase2/)).
 
 ## Workloads
 
@@ -100,16 +102,15 @@ bench/        load generator, mock vLLM worker, trace builders (VisionArena, Ser
 deploy/       vLLM launcher, calibration, experiment runner, validation, Kaggle notebooks, result sanitizer
 kvsim/        the original discrete-event simulator (policies shared with the router)
 results/      phase 2 calibration, phase 3 and 3b runs (sanitized), headline figure
-docs/         per-phase write-ups
 ```
 
-| phase | what | write-up |
-|---|---|---|
-| 0 | simulator + Ollama/M1 calibration | [docs/simulator.md](docs/simulator.md) |
-| 1 | real-image workload, mock worker, load generator | [docs/bench.md](docs/bench.md) |
-| 2 | vLLM on a T4: smoke checks, cost model | [docs/phase2.md](docs/phase2.md) |
-| 3 | router on 2x T4, synthetic traffic | [docs/phase3.md](docs/phase3.md) |
-| 3b | real traffic, scarce caches, seeds, router v2 | [docs/phase3b.md](docs/phase3b.md) |
+| phase | what |
+|---|---|
+| 0 | discrete-event simulator + Ollama/M1 calibration (`kvsim/`, `experiments/`, `calibration/`) |
+| 1 | real-image workload, mock vLLM worker, load generator (`bench/`) |
+| 2 | vLLM on a T4: smoke checks, measured cost model (`deploy/calibrate.py`) |
+| 3 | router on 2x T4, synthetic traffic (`router/`, `deploy/phase3.py`) |
+| 3b | real traffic, scarce caches, repeated seeds, router v2 (`bench/traces/`, `deploy/phase3b.py`) |
 
 ## Data and licenses
 

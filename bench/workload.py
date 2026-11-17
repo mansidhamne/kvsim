@@ -279,7 +279,7 @@ class ImagePool:
 @dataclass(frozen=True)
 class RequestOptions:
     model: str = "mock"
-    send_image_uuids: bool = True   # attach a stable per-image uuid (see docs/vllm_api.md)
+    send_image_uuids: bool = True   # attach a stable per-image uuid (vLLM uses it as the cache key)
     uuid_field: str = "uuid"        # field name on the image content part [verify in Phase 2]
     temperature: float = 0.0
     # Assistant turns in the history:

@@ -2,7 +2,7 @@
 
 Works against a real vLLM worker (on Kaggle) or a mock worker (on the Mac, for testing).
 
-Smoke check answers the open questions in docs/vllm_api.md:
+Smoke check answers the open questions about vLLM 0.32 on a T4:
   * does a text request work; does an image request with a `uuid` field work
   * image token count per image size (usage.prompt_tokens_details.multimodal_tokens)
   * does a second question about the same image hit the cache (cached_tokens > 0)
