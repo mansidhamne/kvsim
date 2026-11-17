@@ -1,6 +1,6 @@
 """Start and stop real `vllm serve` workers (one process per worker, pinned to a GPU).
 
-Flags come from docs/vllm_api.md (vLLM 0.32.0). Every worker uses the same hash settings so
+Flags are for vLLM 0.32.0 (checked against its source). Every worker uses the same hash settings so
 a router can reproduce block hashes: sha256_cbor + a shared PYTHONHASHSEED + a fixed block size.
 
     with VllmWorkers([WorkerSpec(port=8001, gpu=0)], ServeConfig(), log_dir) as ws:
